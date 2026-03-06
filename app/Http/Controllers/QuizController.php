@@ -6,7 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\Level;
 use App\Models\Question;
 use App\Models\UserProgress;
+use App\Models\BlackBook;
+use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class QuizController extends Controller
 {
@@ -92,7 +96,15 @@ class QuizController extends Controller
             // Reset streak on wrong answer
             $user->current_streak = 0;
 
-            // Save to Black Book (TBD in next phase)
+            // Save to Black Book
+            $blackBook = BlackBook::firstOrNew([
+                'user_id' => $user->id,
+                'question_id' => $question->id
+            ]);
+            $blackBook->wrong_count += 1;
+            $blackBook->correct_streak = 0; // Reset mastery streak
+            $blackBook->is_mastered = false;
+            $blackBook->save();
         }
 
         $user->save();

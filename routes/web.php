@@ -32,6 +32,13 @@ Route::post('/store/purchase/{item}', [\App\Http\Controllers\StoreController::cl
 Route::post('/store/omikuji', [\App\Http\Controllers\StoreController::class, 'omikuji'])->name('store.omikuji')->middleware('auth');
 Route::post('/store/redeem', [\App\Http\Controllers\StoreController::class, 'redeemVoucher'])->name('store.redeem')->middleware('auth');
 
+// Black Book Routes
+Route::get('/black-book', [\App\Http\Controllers\BlackBookController::class, 'index'])->name('black_book.index')->middleware('auth');
+Route::post('/black-book/start', [\App\Http\Controllers\BlackBookController::class, 'startRematch'])->name('black_book.start')->middleware('auth');
+Route::get('/black-book/rematch', [\App\Http\Controllers\BlackBookController::class, 'show'])->name('black_book.show')->middleware('auth');
+Route::post('/black-book/answer', [\App\Http\Controllers\BlackBookController::class, 'answer'])->name('black_book.answer')->middleware('auth');
+Route::get('/black-book/results', [\App\Http\Controllers\BlackBookController::class, 'results'])->name('black_book.results')->middleware('auth');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
