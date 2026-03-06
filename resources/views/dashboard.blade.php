@@ -62,6 +62,56 @@
                 </div>
             </div>
 
+            <!-- Store & Daily Mission Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Koban Ichiba Entry -->
+                <a href="{{ route('store.index') }}" class="group bg-gradient-to-r from-stone-800 to-stone-900 p-1 rounded-3xl shadow-xl transition-transform hover:scale-[1.02]">
+                    <div class="bg-white dark:bg-stone-800 h-full rounded-[1.4rem] p-6 flex items-center justify-between border-b-4 border-stone-200 dark:border-stone-700">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 bg-stone-100 dark:bg-stone-700 rounded-2xl flex items-center justify-center text-4xl mr-4 group-hover:rotate-12 transition-transform">🏮</div>
+                            <div>
+                                <h3 class="text-xl font-black text-stone-800 dark:text-white leading-tight underline decoration-amber-400 decoration-4 underline-offset-4">Koban Ichiba</h3>
+                                <p class="text-xs text-stone-500 mt-1 uppercase font-bold tracking-widest">Village Marketplace</p>
+                            </div>
+                        </div>
+                        <div class="text-stone-300 group-hover:text-amber-400 transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Daily Reward Panel -->
+                @if($canClaimDaily)
+                <div class="bg-gradient-to-r from-amber-400 to-orange-500 p-1 rounded-3xl shadow-xl animate-pulse">
+                    <div class="bg-white dark:bg-zinc-900 h-full rounded-[1.4rem] p-6 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 bg-amber-50 dark:bg-amber-950 rounded-2xl flex items-center justify-center text-4xl mr-4">🎁</div>
+                            <div>
+                                <h3 class="text-xl font-black text-stone-800 dark:text-white leading-tight">Daily Gift!</h3>
+                                <p class="text-xs text-amber-600 dark:text-amber-400 mt-1 font-bold tracking-widest uppercase">Claim 50 Koban</p>
+                            </div>
+                        </div>
+                        <form action="{{ route('daily.claim') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-black text-sm transition-all hover:bg-stone-700 active:scale-95">
+                                Claim Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @else
+                <div class="bg-stone-100 dark:bg-zinc-900 p-6 rounded-3xl border-2 border-dashed border-stone-200 dark:border-stone-800 flex items-center opacity-60">
+                    <div class="w-16 h-16 bg-stone-50 dark:bg-zinc-800 rounded-2xl flex items-center justify-center text-4xl mr-4 grayscale">🎁</div>
+                    <div>
+                        <h3 class="text-xl font-black text-stone-400">Gift Claimed</h3>
+                        <p class="text-[10px] text-stone-400 font-bold uppercase tracking-widest">Come back tomorrow!</p>
+                    </div>
+                </div>
+                @endif
+            </div>
+
             <!-- Main Map Section: Road to Tokyo -->
             <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 mb-8 border dark:border-gray-700 min-h-[600px] relative overflow-hidden">
 

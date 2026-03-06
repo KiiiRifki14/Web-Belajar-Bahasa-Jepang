@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Region;
 use App\Models\SecretNote;
 use App\Models\UserProgress;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -35,7 +37,33 @@ class DashboardController extends Controller
         }
         $daysToJLPT = (int) now()->diffInDays($jlptDate);
 
-        return view('dashboard', compact('user', 'regions', 'progress', 'secretNote', 'daysToJLPT'));
+        // Daily Reward Check
+        $canClaimDaily = !$user->last_daily_reward_at || !now()->isSameDay($user->last_daily_reward_at);
+
+        return view('dashboard', compact('user', 'regions', 'progress', 'secretNote', 'daysToJLPT', 'canClaimDaily'));
+    }
+
+    public function claimDaily()
+    {
+        $user = Auth::user();
+
+        if ($user->last_daily_reward_at && now()->isSameDay($user->last_daily_reward_at)) {
+            return back()->with('error', 'You already claimed your daily gift!');
+        }
+
+        $reward = 50; // Simple reward
+        $user->koban += $reward;
+        $user->last_daily_reward_at = now();
+        $user->save();
+
+        Transaction::create([
+            'user_id' => $user->id,
+            'amount' => $reward,
+            'type' => 'reward',
+            'description' => 'Daily Login Reward'
+        ]);
+
+        return back()->with('success', "Okaeri! You received {$reward} Koban as a daily gift.");
     }
 
     public function updateMood(Request $request)

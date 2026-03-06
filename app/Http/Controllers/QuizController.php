@@ -136,6 +136,19 @@ class QuizController extends Controller
 
         // Update progress if at least 60% correct
         if (($correct / $total) >= 0.6) {
+            // Award Level Completion Bonus
+            $bonus = 100;
+            $user = Auth::user();
+            $user->koban += $bonus;
+            $user->save();
+
+            Transaction::create([
+                'user_id' => $user->id,
+                'amount' => $bonus,
+                'type' => 'reward',
+                'description' => "Level completion bonus: {$level->name}"
+            ]);
+
             UserProgress::updateOrCreate(
                 ['user_id' => Auth::id(), 'level_id' => $level->id],
                 ['status' => 'passed', 'high_score' => max($quiz['score'], 0)]

@@ -13,11 +13,18 @@ class Voucher extends Model
         'item_id',
         'quantity',
         'is_redeemed',
-        'expires_at'
+        'expires_at',
+        'user_id',
+        'redeemed_at',
     ];
 
     public function item()
     {
         return $this->belongsTo(Item::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
