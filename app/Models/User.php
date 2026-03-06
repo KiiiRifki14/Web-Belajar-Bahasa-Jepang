@@ -21,6 +21,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'koban',
+        'current_streak',
+        'highest_streak',
+        'active_theme',
+        'active_mascot_skin',
+        'mood',
     ];
 
     /**

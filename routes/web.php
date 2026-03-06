@@ -17,4 +17,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('regions', \App\Http\Controllers\Admin\RegionController::class);
+    Route::resource('levels', \App\Http\Controllers\Admin\LevelController::class);
+    Route::resource('questions', \App\Http\Controllers\Admin\QuestionController::class);
+    Route::resource('items', \App\Http\Controllers\Admin\ItemController::class);
+    Route::resource('secret_notes', \App\Http\Controllers\Admin\SecretNoteController::class);
+    Route::resource('vouchers', \App\Http\Controllers\Admin\VoucherController::class);
+});
+
+require __DIR__ . '/auth.php';

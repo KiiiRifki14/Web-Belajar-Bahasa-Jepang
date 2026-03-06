@@ -17,6 +17,13 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['admin', 'user'])->default('user');
+            $table->integer('koban')->default(0);
+            $table->integer('current_streak')->default(0);
+            $table->integer('highest_streak')->default(0);
+            $table->string('active_theme')->nullable();
+            $table->string('active_mascot_skin')->nullable();
+            $table->string('mood')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
