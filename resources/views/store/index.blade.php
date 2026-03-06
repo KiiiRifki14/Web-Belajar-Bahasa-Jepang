@@ -4,111 +4,123 @@
         Tempat membeli Power-ups, Kosmetik, dan menarik O-mikuji.
         Desain: Rak Kayu Jepang Estetik.
     --}}
-    <div class="py-12" x-data="{ showOmikuji: {{ session('omikuji_result') ? 'true' : 'false' }} }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-12 min-h-screen bg-transparent relative" x-data="{ showOmikuji: {{ session('omikuji_result') ? 'true' : 'false' }} }">
+        <!-- Magical ambient backdrop -->
+        <div class="absolute top-20 right-10 w-96 h-96 bg-amber-300 opacity-20 blur-[100px] rounded-full pointer-events-none"></div>
+        <div class="absolute bottom-20 left-10 w-96 h-96 bg-sakura-300 opacity-20 blur-[100px] rounded-full pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 relative z-10">
 
             <!-- Header Toko: Menampilkan Saldo Koban -->
             <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 class="text-display text-[var(--theme-text)] uppercase italic">Koban Ichiba</h1>
-                    <p class="text-label text-gray-400 mt-4">Pasar Tradisional Desa Odyssey</p>
+                    <h1 class="font-serif text-5xl font-bold text-gray-800 italic drop-shadow-sm">Koban Ichiba</h1>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-amber-600 mt-4">Pasar Tradisional Desa Odyssey</p>
                 </div>
-                <x-card class="flex flex-col items-center min-w-[180px]">
-                    <span class="text-label text-gray-400 mb-1">Dompet Anda</span>
-                    <div class="text-3xl font-black text-amber-500 flex items-center">
-                        <span class="mr-2">🪙</span> {{ number_format($user->koban) }}
+                <div class="glass-panel p-6 flex flex-col items-center min-w-[200px] shadow-glass-sm" style="border-radius: 2rem;">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Dompet Anda</span>
+                    <div class="text-4xl font-black text-amber-500 flex items-center filter drop-shadow-sm">
+                        <span class="mr-3 animate-float-slow">🪙</span> {{ number_format($user->koban) }}
                     </div>
-                </x-card>
+                </div>
             </div>
 
             <!-- Bagian Atas: O-mikuji & Voucher -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-section mb-16">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
                 <!-- Portal O-mikuji -->
-                <div class="md:col-span-2 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950 p-section rounded-[3rem] manhua-outline relative overflow-hidden group">
-                    <div class="absolute -right-10 -bottom-10 text-[12rem] opacity-5 group-hover:rotate-12 transition-transform">⛩️</div>
-                    <div class="relative z-10">
-                        <h3 class="text-heading text-red-800 dark:text-red-200 mb-3">O-mikuji Shrine</h3>
-                        <p class="text-body text-red-600 dark:text-red-300 opacity-70 mb-8 max-w-sm">Tarik ramalan hari ini untuk mendapatkan nasihat atau keberuntungan ekstra.</p>
-                        <x-btn-primary @click="showOmikuji = true" class="hover:scale-105">
+                <div class="md:col-span-2 glass-panel p-10 rounded-[3rem] relative overflow-hidden group shadow-glow border-red-200/50 bg-gradient-to-br from-white/60 to-red-50/40">
+                    <div class="absolute -right-6 -bottom-6 text-[14rem] opacity-20 filter blur-[4px] group-hover:rotate-12 transition-transform duration-700 pointer-events-none">⛩️</div>
+                    <div class="relative z-10 flex flex-col h-full justify-center">
+                        <h3 class="font-serif text-3xl font-bold text-red-800 mb-3 drop-shadow-sm">O-mikuji Shrine</h3>
+                        <p class="text-sm text-red-700/80 mb-8 max-w-sm font-medium">Tarik ramalan hari ini untuk mendapatkan nasihat atau keberuntungan ekstra.</p>
+                        <button @click="showOmikuji = true" class="w-max px-8 py-4 bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-full shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-95 text-sm uppercase tracking-widest">
                             Tarik Ramalan (100 🪙)
-                        </x-btn-primary>
+                        </button>
                     </div>
                 </div>
 
                 <!-- Penukaran Kode Voucher -->
-                <x-card>
-                    <h3 class="text-subheading text-[var(--theme-text)] italic">Misi Rahasia?</h3>
-                    <p class="text-caption text-gray-400 mb-6">Masukkan kode untuk menukar kado misterius</p>
+                <div class="glass-panel p-8 rounded-[3rem] shadow-glass-sm flex flex-col justify-center border-white/60">
+                    <h3 class="font-serif text-2xl font-bold text-gray-800 italic mb-2">Misi Rahasia?</h3>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-8">Tukar kode rahasia</p>
                     <form action="{{ route('store.redeem') }}" method="POST" class="space-y-4">
                         @csrf
-                        <input type="text" name="code" placeholder="KODE-ODYSSEY" class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-[var(--theme-border)] p-4 rounded-xl text-center font-black tracking-widest outline-none focus:border-[var(--theme-primary)] transition-all">
-                        <x-btn-primary type="submit" class="w-full">Klaim Kado</x-btn-primary>
+                        <input type="text" name="code" placeholder="KODE-ODYSSEY" class="w-full bg-white/50 backdrop-blur-sm border-2 border-white/60 p-4 rounded-2xl text-center font-black tracking-widest outline-none focus:border-sakura-400 focus:bg-white/80 transition-all text-gray-800 placeholder-gray-400 shadow-inner">
+                        <button type="submit" class="w-full py-4 bg-white/70 hover:bg-white text-sakura-600 font-bold border border-sakura-200 hover:border-sakura-400 rounded-2xl shadow-sm transition-all duration-300 tracking-widest uppercase text-xs">Klaim Kado</button>
                     </form>
-                </x-card>
+                </div>
             </div>
 
             <!-- Rak Item: Power-ups & Skin Mascot -->
-            <x-section-heading title="Rak Barang Dagangan" subtitle="Power-ups & Kosmetik"/>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-section">
+            <div class="mb-8">
+                <h2 class="font-serif text-3xl font-bold text-gray-800">Rak Barang Dagangan</h2>
+                <p class="text-[10px] uppercase font-bold tracking-widest text-gray-500 mt-2">Power-ups & Kosmetik</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 @foreach($items as $item)
-                <x-card class="overflow-hidden hover:scale-105 transition-transform">
-                    <div class="h-48 bg-stone-50 dark:bg-gray-900 flex items-center justify-center relative group-hover:bg-stone-100 transition-colors -m-6 mb-6">
-                        <span class="text-7xl group-hover:scale-110 transition-transform duration-500">
+                <div class="glass-panel p-6 overflow-hidden hover:scale-[1.02] hover:shadow-glow transition-all duration-300 flex flex-col group border-white/60" style="border-radius: 2rem;">
+                    <div class="h-48 bg-white/30 backdrop-blur-sm shadow-inner rounded-3xl flex items-center justify-center relative group-hover:bg-white/50 transition-colors -m-2 mb-6 border border-white/40">
+                        <span class="text-7xl group-hover:scale-110 transition-transform duration-500 filter drop-shadow-md animate-float-slow">
                             @if($item->type === 'powerup') ⚡ @elseif($item->type === 'skin') 👘 @else 🎁 @endif
                         </span>
-                        <div class="absolute top-4 right-4 bg-white/80 dark:bg-gray-800/80 px-3 py-1 rounded-full text-caption text-[var(--theme-primary)]">
+                        <div class="absolute top-4 right-4 bg-white/80 backdrop-blur-md border border-white/60 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-gray-600 shadow-sm">
                             {{ $item->type }}
                         </div>
                     </div>
-                    <div class="flex flex-col flex-grow">
-                        <h3 class="text-subheading text-[var(--theme-text)] mb-1">{{ $item->name }}</h3>
-                        <p class="text-small text-gray-400 mb-6 flex-grow italic">"{{ $item->description }}"</p>
+                    <div class="flex flex-col flex-grow px-2">
+                        <h3 class="font-serif text-xl font-bold text-gray-800 mb-2">{{ $item->name }}</h3>
+                        <p class="text-xs text-gray-500 mb-6 flex-grow italic leading-relaxed">"{{ $item->description }}"</p>
 
-                        <div class="flex items-center justify-between mt-auto">
-                            <div class="text-2xl font-black text-amber-500">
-                                <span class="text-sm mr-1">🪙</span> {{ number_format($item->price) }}
+                        <div class="flex items-center justify-between mt-auto bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50 backdrop-blur-sm">
+                            <div class="text-2xl font-black text-amber-500 filter drop-shadow-sm flex items-center">
+                                <span class="text-sm mr-2 opacity-80">🪙</span> {{ number_format($item->price) }}
                             </div>
                             <form action="{{ route('store.purchase', $item) }}" method="POST">
                                 @csrf
-                                <x-btn-secondary type="submit" size="md">Beli</x-btn-secondary>
+                                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-sakura-400 to-matcha-400 hover:from-sakura-500 hover:to-matcha-500 text-white font-bold rounded-xl shadow-glow transition-all duration-300 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-widest">Beli</button>
                             </form>
                         </div>
                     </div>
-                </x-card>
+                </div>
                 @endforeach
             </div>
         </div>
 
         <!-- Pop-up O-mikuji (Eksklusif: Animasi Box Guncang) -->
         <template x-if="showOmikuji">
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                <x-card class="max-w-lg w-full shadow-2xl relative text-center" style="border-radius: 3.5rem;" @click.away="showOmikuji = false">
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-md">
+                <div class="glass-panel shadow-2xl max-w-lg w-full relative text-center border-white/60 p-10 overflow-hidden" style="border-radius: 3.5rem;" @click.away="showOmikuji = false">
+                    <!-- Decor inside modal -->
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-red-300 opacity-20 blur-[50px] rounded-full pointer-events-none"></div>
+                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-300 opacity-20 blur-[50px] rounded-full pointer-events-none"></div>
 
                     @if(session('omikuji_result'))
                     <!-- Hasil Ramalan -->
-                    <div class="animate-fadeIn">
-                        <span class="text-label text-[var(--theme-primary)] mb-8 block">Hasil Ramalan Anda</span>
-                        <div class="text-6xl mb-8">📜</div>
-                        <h4 class="text-heading font-serif italic text-[var(--theme-text)] leading-relaxed mb-10">
+                    <div class="animate-fadeIn relative z-10 py-4">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-8 block">Hasil Ramalan Anda</span>
+                        <div class="text-7xl mb-10 filter drop-shadow-md">📜</div>
+                        <h4 class="font-serif text-2xl font-bold italic text-gray-800 leading-relaxed mb-12">
                             "{{ session('omikuji_result')['message'] }}"
                         </h4>
-                        <x-btn-primary @click="showOmikuji = false" class="rounded-full">Arigatou</x-btn-primary>
+                        <button @click="showOmikuji = false" class="px-10 py-4 bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-full shadow-glow transition-all duration-300 hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-widest">Arigatou</button>
                     </div>
                     @else
                     <!-- Box Guncang Sebelum Tarik -->
-                    <div x-data="{ shaking: false }">
-                        <h3 class="text-heading mb-10 italic">Guncang Kotak Ramalan</h3>
-                        <div class="text-8xl inline-block mb-10" :class="shaking ? 'animate-shake' : ''">🎍</div>
-                        <div class="flex flex-col gap-4">
+                    <div x-data="{ shaking: false }" class="relative z-10 py-4">
+                        <h3 class="font-serif text-3xl font-bold text-gray-800 mb-12 italic">Guncang Kotak Ramalan</h3>
+                        <div class="text-[8rem] inline-block mb-12 filter drop-shadow-xl" :class="shaking ? 'animate-shake' : 'animate-float-slow'">🎍</div>
+                        <div class="flex flex-col gap-6">
                             <form action="{{ route('store.omikuji') }}" method="POST" @submit="shaking = true">
                                 @csrf
-                                <x-btn-primary type="submit" class="w-full">TARIK SEKARANG!</x-btn-primary>
+                                <button type="submit" class="w-full py-5 bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-full shadow-glow transition-all duration-300 hover:-translate-y-1 active:scale-95 text-lg uppercase tracking-widest tracking-wide flex items-center justify-center">
+                                    <span class="mr-2">⛩️</span> TARIK SEKARANG!
+                                </button>
                             </form>
-                            <button @click="showOmikuji = false" class="text-caption text-gray-400">Batal</button>
+                            <button @click="showOmikuji = false" class="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors">Batal</button>
                         </div>
                     </div>
                     @endif
-                </x-card>
+                </div>
             </div>
         </template>
     </div>

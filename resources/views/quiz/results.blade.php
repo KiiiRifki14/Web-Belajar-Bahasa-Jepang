@@ -1,50 +1,54 @@
 <x-app-layout>
-    <div class="py-12 min-h-screen flex items-center justify-center bg-sakura-light dark:bg-tokyo-night">
-        <div class="max-w-2xl w-full mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-2xl rounded-3xl border dark:border-gray-700 p-10 text-center relative">
+    <div class="py-12 min-h-screen flex items-center justify-center bg-transparent">
+        <div class="max-w-2xl w-full mx-auto sm:px-6 lg:px-8 relative z-10">
+            <div class="glass-panel overflow-hidden shadow-2xl rounded-[3rem] border border-white/60 p-12 text-center relative">
 
                 <!-- Confetti/Petal Decor -->
-                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-300 via-indigo-500 to-green-300"></div>
+                <div class="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-sakura-300 via-white to-matcha-300 opacity-80"></div>
 
-                <div class="mb-10">
+                <!-- Magic Glow backdrop -->
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-sakura-300 opacity-20 blur-[80px] rounded-full pointer-events-none"></div>
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-matcha-300 opacity-20 blur-[80px] rounded-full pointer-events-none"></div>
+
+                <div class="mb-12 relative z-10">
                     @if(($correct / $total) >= 0.8)
-                    <div class="text-8xl mb-4 animate-bounce">🎌</div>
-                    <h1 class="text-4xl font-black text-gray-800 dark:text-white capitalize">Amazing Odyssey!</h1>
-                    <p class="text-gray-500 mt-2">Neko-Sensei is very proud of your progress.</p>
+                    <div class="text-[6rem] mb-6 animate-bounce filter drop-shadow-md">🎌</div>
+                    <h1 class="font-serif text-5xl font-bold text-gray-800 capitalize mb-4">Amazing Odyssey!</h1>
+                    <p class="text-[10px] font-bold tracking-widest uppercase text-sakura-600 mt-2">Neko-Sensei is very proud of your progress.</p>
                     @elseif(($correct / $total) >= 0.6)
-                    <div class="text-8xl mb-4">💮</div>
-                    <h1 class="text-4xl font-black text-gray-800 dark:text-white capitalize">Good Effort!</h1>
-                    <p class="text-gray-500 mt-2">You've unlocked the next part of the journey.</p>
+                    <div class="text-[6rem] mb-6 filter drop-shadow-md">💮</div>
+                    <h1 class="font-serif text-5xl font-bold text-gray-800 capitalize mb-4">Good Effort!</h1>
+                    <p class="text-[10px] font-bold tracking-widest uppercase text-matcha-600 mt-2">You've unlocked the next part of the journey.</p>
                     @else
-                    <div class="text-8xl mb-4 grayscale">🗻</div>
-                    <h1 class="text-4xl font-black text-gray-800 dark:text-white capitalize">Keep Training!</h1>
-                    <p class="text-gray-500 mt-2">The road to Tokyo is long, but you can do it.</p>
+                    <div class="text-[6rem] mb-6 grayscale opacity-60">🗻</div>
+                    <h1 class="font-serif text-5xl font-bold text-gray-600 capitalize mb-4">Keep Training!</h1>
+                    <p class="text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-2">The road to Tokyo is long, but you can do it.</p>
                     @endif
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid grid-cols-2 gap-6 mb-12">
-                    <div class="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border-2 border-gray-100 dark:border-gray-700">
-                        <span class="block text-[10px] font-black uppercase text-gray-400 tracking-tighter mb-1">Total Score</span>
-                        <span class="text-3xl font-black text-indigo-600 dark:text-indigo-400">{{ number_format($score) }}</span>
+                <div class="grid grid-cols-2 gap-6 mb-12 relative z-10">
+                    <div class="p-8 bg-white/40 backdrop-blur-sm rounded-[2rem] border border-white/60 shadow-glass-sm transition-transform hover:-translate-y-1">
+                        <span class="block text-[10px] font-bold uppercase text-gray-500 tracking-widest mb-2">Total Score</span>
+                        <span class="font-serif text-4xl font-bold text-matcha-600">{{ number_format($score) }}</span>
                     </div>
-                    <div class="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border-2 border-gray-100 dark:border-gray-700">
-                        <span class="block text-[10px] font-black uppercase text-gray-400 tracking-tighter mb-1">Accuracy</span>
-                        <span class="text-3xl font-black text-pink-500">{{ round(($correct / $total) * 100) }}%</span>
+                    <div class="p-8 bg-white/40 backdrop-blur-sm rounded-[2rem] border border-white/60 shadow-glass-sm transition-transform hover:-translate-y-1">
+                        <span class="block text-[10px] font-bold uppercase text-gray-500 tracking-widest mb-2">Accuracy</span>
+                        <span class="font-serif text-4xl font-bold text-sakura-500">{{ round(($correct / $total) * 100) }}%</span>
                     </div>
                 </div>
 
                 <!-- Bottom Actions -->
-                <div class="space-y-4">
-                    <a href="{{ route('dashboard') }}" class="block w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 dark:shadow-none transition-all active:scale-95 text-lg">
+                <div class="space-y-4 relative z-10">
+                    <a href="{{ route('dashboard') }}" class="block w-full py-5 bg-gradient-to-r from-sakura-400 to-matcha-400 hover:from-sakura-500 hover:to-matcha-500 text-white font-bold rounded-full shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-95 text-lg tracking-wide">
                         Return to Map
                     </a>
-                    <a href="{{ route('quiz.start', $level) }}" class="block w-full py-4 bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 font-bold rounded-2xl border-2 border-indigo-100 dark:border-indigo-600 transition-all hover:bg-indigo-50 dark:hover:bg-gray-600 text-lg">
+                    <a href="{{ route('quiz.start', $level) }}" class="block w-full py-5 bg-white/50 backdrop-blur-sm text-gray-600 font-bold rounded-full border-2 border-sakura-200 transition-all duration-300 hover:bg-white/80 hover:border-sakura-300 hover:text-sakura-600 hover:scale-[1.02] active:scale-95 text-lg tracking-wide shadow-glass-sm">
                         Try Again
                     </a>
                 </div>
 
-                <div class="mt-10 pt-10 border-t dark:border-gray-700 flex justify-center space-x-8 opacity-50 grayscale hover:grayscale-0 transition-all">
+                <div class="mt-12 pt-10 border-t border-gray-200/50 flex justify-center space-x-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 relative z-10 animate-float-slow">
                     <span class="text-3xl">🐱</span>
                     <span class="text-3xl text-yellow-500">🪙</span>
                     <span class="text-3xl text-pink-500">🌸</span>
