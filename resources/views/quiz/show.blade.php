@@ -7,8 +7,8 @@
     <div class="min-h-screen flex flex-col md:flex-row overflow-hidden bg-white dark:bg-gray-900">
 
         <!-- Sisi Kiri: Visual Hint & Story Context (50% di Desktop) -->
-        <div class="w-full md:w-1/2 h-[40vh] md:h-screen relative bg-stone-100 dark:bg-gray-800 flex items-center justify-center p-8 border-r-2 border-[var(--theme-border)]">
-            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/papyros.png')]"></div>
+        <div class="w-full md:w-1/2 h-[40vh] md:h-screen relative bg-stone-100 dark:bg-gray-800 flex items-center justify-center p-8 border-r-2" style="border-color: var(--theme-border);">
+            <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/papyros.png');"></div>
 
             <div class="relative z-10 w-full max-w-lg">
                 <!-- Visual Hint Image: Gambar petunjuk soal -->
@@ -24,7 +24,7 @@
                 </div>
 
                 <!-- Neko-Sensei Reflection Box: Pesan motivasi -->
-                <div class="mt-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 rounded-[2rem] manhua-outline relative">
+                <div class="bg-white dark:bg-gray-800 backdrop-blur-md p-6 manhua-outline relative mt-8" style="background-color: rgba(255, 255, 255, 0.8); border-radius: 2rem;">
                     <div class="absolute -top-6 -left-6 text-4xl transform -rotate-12">🐱</div>
                     <p class="text-sm font-serif italic text-[var(--theme-text)] leading-relaxed">
                         "Amati gambar di atas dengan seksama. Bahasa Jepang bukan hanya soal kata, tapi juga rasa dan nuansa."
@@ -35,17 +35,21 @@
 
         <!-- Sisi Kanan: Panel Kuis Interaktif -->
         <div class="w-full md:w-1/2 h-[60vh] md:h-screen overflow-y-auto flex items-center justify-center p-6 md:p-12 relative">
-            <div class="w-full max-w-md">
-
+            @php
+            $progress = count($quiz['questions']) > 0 ? ($currentIndex / count($quiz['questions'])) * 100 : 0;
+            @endphp
+            <div class="w-full max-w-md" x-data="{ progress: {{ $progress }}, selected: null, punch: {{ session('neko_punch') ? 'true' : 'false' }} }">
                 <!-- Progress Bar: Indikator sejauh mana kuis berlangsung -->
-                <div class="mb-10 w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                    <div class="bg-[var(--theme-primary)] h-full transition-all duration-500" style="width: {{ ($currentIndex / count($quiz['questions'])) * 100 }}%"></div>
+                <div class="mb-10 w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden"
+                    :style="{ '--progress': progress + '%' }">
+                    <div class="h-full transition-all duration-500"
+                        style="background-color: var(--theme-primary); width: var(--progress);"></div>
                 </div>
 
                 <!-- Judul Pertanyaan -->
                 <div class="mb-12">
                     <span class="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-2 block">Level {{ $level->order }}: {{ $level->name }}</span>
-                    <h2 class="text-3xl font-black text-[var(--theme-text)] leading-tight tracking-tighter">
+                    <h2 class="text-3xl font-black leading-tight tracking-tighter" style="color: var(--theme-text);">
                         {{ $question->question_text }}
                     </h2>
                 </div>
@@ -56,7 +60,7 @@
                     <input type="hidden" name="question_id" value="{{ $question->id }}">
 
                     @if($question->type === 'multiple_choice')
-                    <div class="grid grid-cols-1 gap-4" x-data="{ selected: null, punch: {{ session('neko_punch') ? 'true' : 'false' }} }">
+                    <div class="grid grid-cols-1 gap-4">
                         @foreach($question->options as $key => $option)
                         @php
                         $isWrong = ($option !== $question->correct_answer);
@@ -67,7 +71,8 @@
                             x-show="!punch || (punch && !{{ $shouldHide ? 'true' : 'false' }})"
                             x-cloak
                             class="relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all hover:translate-x-2 bg-transparent group"
-                            :class="selected === '{{ $option }}' ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 manhua-glow' : 'border-[var(--theme-border)]'">
+                            :style="selected === '{{ $option }}' ? 'border-color: var(--theme-primary); background-color: rgba(var(--theme-primary-rgb), 0.05);' : 'border-color: var(--theme-border);'"
+                            :class="selected === '{{ $option }}' ? 'manhua-glow' : ''">
 
                             <input type="radio" name="answer" value="{{ $option }}" class="hidden" @change="selected = '{{ $option }}'" required>
 
@@ -93,14 +98,14 @@
                         <button type="submit" formaction="{{ route('quiz.use_paw') }}"
                             class="w-16 h-16 rounded-2xl flex items-center justify-center transition-all bg-indigo-50 dark:bg-indigo-900 border-2 border-indigo-200 dark:border-indigo-700 group hover:scale-110 {{ ($user->paw_points <= 0 || session('neko_punch')) ? 'opacity-20 pointer-events-none' : '' }}"
                             title="Neko-Punch: Eliminasi opsi salah">
-                            <span class="text-3xl filter group-hover:drop-shadow-[0_0_8px_rgba(99,102,241,0.6)]">🐾</span>
+                            <span class="text-3xl filter" style="filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6));">🐾</span>
                             <div class="absolute -top-2 -right-2 bg-indigo-600 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center">
                                 {{ $user->paw_points }}
                             </div>
                         </button>
                         @endif
 
-                        <button type="submit" class="flex-grow bg-[var(--theme-text)] text-white py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-xl hover:-translate-y-1 transition-all manhua-glow-hover active:scale-95">
+                        <button type="submit" class="flex-grow text-white py-5 font-black text-xs uppercase tracking-[0.3em] shadow-xl hover:-translate-y-1 transition-all manhua-glow-hover active:scale-95" style="background-color: var(--theme-text); border-radius: 2rem;">
                             Kirim Jawaban
                         </button>
                     </div>
