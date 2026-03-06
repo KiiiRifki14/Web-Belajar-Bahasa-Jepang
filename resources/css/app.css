@@ -1,3 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        /* Default / Senja di Shinjuku */
+        --theme-bg: #fffcf9;
+        --theme-text: #4a374a;
+        --theme-primary: #ff8c69;
+        --theme-secondary: #9d7bb0;
+        --theme-glow: rgba(255, 140, 105, 0.4);
+        --theme-border: rgba(74, 55, 74, 0.1);
+    }
+
+    .theme-perpustakaan {
+        --theme-bg: #fdf6e3;
+        --theme-text: #586e75;
+        --theme-primary: #b58900;
+        --theme-secondary: #859900;
+        --theme-glow: rgba(181, 137, 0, 0.3);
+        --theme-border: rgba(88, 110, 117, 0.2);
+    }
+
+    .theme-neon {
+        --theme-bg: #0d0221;
+        --theme-text: #e0e0e0;
+        --theme-primary: #00f5d4;
+        --theme-secondary: #fee440;
+        --theme-glow: rgba(0, 245, 212, 0.6);
+        --theme-border: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.manhua-card {
+    @apply bg-white dark:bg-gray-800 border border-opacity-10 rounded-2xl shadow-sm transition-all duration-300;
+    border-color: var(--theme-border);
+}
+
+.manhua-glow {
+    box-shadow: 0 0 15px var(--theme-glow);
+}
+
+.manhua-outline {
+    border-width: 0.5px;
+    border-color: var(--theme-border);
+}

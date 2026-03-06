@@ -39,6 +39,9 @@ Route::get('/black-book/rematch', [\App\Http\Controllers\BlackBookController::cl
 Route::post('/black-book/answer', [\App\Http\Controllers\BlackBookController::class, 'answer'])->name('black_book.answer')->middleware('auth');
 Route::get('/black-book/results', [\App\Http\Controllers\BlackBookController::class, 'results'])->name('black_book.results')->middleware('auth');
 
+Route::post('/theme/update', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update')->middleware('auth');
+Route::get('/album', [\App\Http\Controllers\AlbumController::class, 'index'])->name('album.index')->middleware('auth');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
