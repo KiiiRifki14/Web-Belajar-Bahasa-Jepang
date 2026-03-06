@@ -106,17 +106,21 @@ class BlackBookController extends Controller
         if ($session['current_index'] >= count($session['questions'])) {
             return redirect()->route('black_book.results');
         }
+
+        // Jika belum selesai, arahkan kembali ke soal berikutnya
+        return redirect()->route('black_book.show');
     }
 
     public function results()
     {
-        $rematch = session('rematch');
-        if (!$rematch) return redirect()->route('black_book.index');
+        // Gunakan nama session yang benar: 'black_book_session'
+        $session = session('black_book_session');
+        if (!$session) return redirect()->route('black_book.index');
 
-        $correct = $rematch['correct_count'];
-        $total = count($rematch['items']);
+        $correct = $session['correct_count'];
+        $total = count($session['questions']);
 
-        session()->forget('rematch');
+        session()->forget('black_book_session');
 
         return view('black_book.results', compact('correct', 'total'));
     }

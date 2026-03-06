@@ -4,7 +4,7 @@
         Tempat membeli Power-ups, Kosmetik, dan menarik O-mikuji.
         Desain: Rak Kayu Jepang Estetik.
     --}}
-    <div class="py-12" x-data="{ showOmikuji: false }">
+    <div class="py-12" x-data="{ showOmikuji: {{ session('omikuji_result') ? 'true' : 'false' }} }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             <!-- Header Toko: Menampilkan Saldo Koban -->

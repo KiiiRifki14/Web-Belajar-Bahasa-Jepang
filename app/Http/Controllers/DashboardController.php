@@ -51,6 +51,15 @@ class DashboardController extends Controller
         if (!$user->last_daily_claim || !Carbon::parse($user->last_daily_claim)->isToday()) {
             $user->increment('koban', 50);
             $user->update(['last_daily_claim' => now()]);
+
+            // Catat riwayat transaksi hadiah harian untuk audit trail
+            Transaction::create([
+                'user_id' => $user->id,
+                'amount' => 50,
+                'type' => 'daily_reward',
+                'description' => 'Klaim Hadiah Harian'
+            ]);
+
             return back()->with('success', 'Selamat! Anda mendapat 50 Koban hari ini! 🪙');
         }
 

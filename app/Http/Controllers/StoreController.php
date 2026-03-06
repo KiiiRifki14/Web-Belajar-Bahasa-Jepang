@@ -33,6 +33,16 @@ class StoreController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        // Jika item bertipe kosmetik (skin/theme), pastikan user belum memilikinya
+        if (in_array($item->type, ['skin', 'theme'])) {
+            $alreadyOwned = UserInventory::where('user_id', $user->id)
+                                         ->where('item_id', $item->id)
+                                         ->exists();
+            if ($alreadyOwned) {
+                return back()->with('error', 'Anda sudah memiliki ' . $item->name . '! Tidak perlu membelinya lagi.');
+            }
+        }
+
         if ($user->koban < $item->price) {
             return back()->with('error', 'Koban Anda tidak cukup! Kumpulkan lebih banyak dari kuis.');
         }
@@ -78,6 +88,14 @@ class StoreController extends Controller
         $user->increment('koban', $voucher->koban_reward);
         $voucher->update(['is_used' => true]);
 
+        // Catat riwayat transaksi klaim voucher untuk audit trail
+        Transaction::create([
+            'user_id' => $user->id,
+            'amount' => $voucher->koban_reward,
+            'type' => 'voucher',
+            'description' => 'Klaim Kode Voucher: ' . $voucher->code
+        ]);
+
         return back()->with('success', 'Voucher berhasil ditukar! Anda mendapat ' . $voucher->koban_reward . ' Koban.');
     }
 
@@ -96,6 +114,14 @@ class StoreController extends Controller
         }
 
         $user->decrement('koban', 100);
+
+        // Catat riwayat transaksi untuk audit trail
+        Transaction::create([
+            'user_id' => $user->id,
+            'amount' => -100,
+            'type' => 'omikuji',
+            'description' => 'Menarik gacha O-mikuji'
+        ]);
 
         // Kumpulan ramalan acak (Poetic)
         $fortunes = [

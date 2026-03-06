@@ -25,10 +25,10 @@ class QuizController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Pastikan level terdaftar di progress user
+        // Pastikan level terdaftar di progress user - default ke 'locked' untuk mencegah cheat bypass
         $progress = UserProgress::firstOrCreate(
             ['user_id' => $user->id, 'level_id' => $level->id],
-            ['status' => 'unlocked']
+            ['status' => 'locked']
         );
 
         // Jika level masih terkunci, jangan izinkan akses
@@ -119,6 +119,11 @@ class QuizController extends Controller
         if ($isCorrect) {
             $quiz['correct_answers']++;
             $user->increment('current_streak');
+
+            // Update highest_streak jika current_streak memecahkan rekor pribadi
+            if ($user->current_streak > $user->highest_streak) {
+                $user->update(['highest_streak' => $user->current_streak]);
+            }
 
             // Hadiah Paw Points setiap kelipatan 5 streak (Incentive)
             if ($user->current_streak % 5 === 0) {
