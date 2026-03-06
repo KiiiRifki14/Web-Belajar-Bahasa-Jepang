@@ -1,56 +1,59 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-6" :status="session('status')" />
+    <x-auth-session-status class="mb-5 text-center text-sm font-bold text-green-600 bg-green-50/80 py-3 rounded-2xl px-4" :status="session('status')" />
 
     <div class="mb-8">
-        <h3 class="text-3xl font-bold text-slate-800 mb-2 font-serif drop-shadow-sm">Selamat Datang 👋</h3>
-        <p class="text-sm text-slate-600 font-medium leading-relaxed">Silakan masuk untuk melanjutkan petualangan belajarmu di Nihongo Odyssey.</p>
+        <h3 class="font-serif text-3xl font-bold text-slate-800 leading-tight mb-2">Selamat Datang 👋</h3>
+        <p class="text-sm text-slate-500 font-medium leading-relaxed">Masuk untuk melanjutkan petualangan belajarmu.</p>
     </div>
 
-    <form method="POST" action="{{ route('login') }}" class="space-y-6">
+    <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
-        <!-- Email Address -->
-        <div class="relative">
-            <label for="email" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-700 mb-2 block ml-2">Alamat Email</label>
-            <input id="email" class="w-full bg-white/80 backdrop-blur-md border border-slate-300 focus:border-sakura-500 focus:ring focus:ring-sakura-200 focus:ring-opacity-50 focus:bg-white rounded-2xl p-4 outline-none transition-all font-semibold text-slate-900 shadow-sm" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-1" />
+        <!-- Email -->
+        <div>
+            <label for="email" class="text-label text-slate-500 tracking-[0.25em] mb-2 block ml-1">Alamat Email</label>
+            <input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username"
+                class="input-manhua w-full" placeholder="nama@contoh.com">
+            <x-input-error :messages="$errors->get('email')" class="mt-1.5 text-xs text-red-500 ml-1" />
         </div>
 
         <!-- Password -->
-        <div class="relative">
-            <div class="flex items-center justify-between mb-2 ml-2">
-                <label for="password" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-700 block">Kata Sandi</label>
+        <div>
+            <div class="flex items-center justify-between mb-2 mx-1">
+                <label for="password" class="text-label text-slate-500 tracking-[0.25em]">Kata Sandi</label>
                 @if (Route::has('password.request'))
-                <a class="text-[10px] font-bold text-sakura-600 hover:text-sakura-800 transition-colors uppercase tracking-widest bg-white/50 px-3 py-1 rounded-full" href="{{ route('password.request') }}">
+                <a href="{{ route('password.request') }}"
+                    class="text-[10px] font-bold uppercase tracking-widest text-pink-500 hover:text-pink-700 transition-colors px-3 py-1 rounded-full hover:bg-pink-50">
                     Lupa?
                 </a>
                 @endif
             </div>
-
-            <input id="password" class="w-full bg-white/80 backdrop-blur-md border border-slate-300 focus:border-sakura-500 focus:ring focus:ring-sakura-200 focus:ring-opacity-50 focus:bg-white rounded-2xl p-4 outline-none transition-all font-semibold text-slate-900 shadow-sm"
-                type="password"
-                name="password"
-                required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-1" />
+            <input id="password" type="password" name="password" required autocomplete="current-password"
+                class="input-manhua w-full" placeholder="••••••••">
+            <x-input-error :messages="$errors->get('password')" class="mt-1.5 text-xs text-red-500 ml-1" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="flex items-center ml-2">
-            <label for="remember_me" class="inline-flex items-center cursor-pointer group">
-                <input id="remember_me" type="checkbox" class="rounded bg-white border-slate-400 text-sakura-600 shadow-sm focus:border-sakura-400 focus:ring focus:ring-sakura-200 focus:ring-opacity-50 w-5 h-5 transition-all">
-                <span class="ms-3 text-sm font-bold text-slate-600 group-hover:text-slate-900 transition-colors">Ingat Saya</span>
+        <!-- Remember me -->
+        <div class="flex items-center gap-3 ml-1">
+            <input id="remember_me" type="checkbox" name="remember"
+                class="w-5 h-5 rounded-lg text-pink-500 border-slate-300 focus:ring-pink-300 transition-all">
+            <label for="remember_me" class="text-sm font-bold text-slate-500 cursor-pointer hover:text-slate-700 transition-colors select-none">
+                Ingat Saya
             </label>
         </div>
 
-        <div class="pt-6 flex flex-col gap-4">
-            <button type="submit" class="w-full bg-sakura-600 border border-sakura-600 text-white font-black py-4 rounded-full text-xs uppercase tracking-[0.3em] shadow-[0_5px_15px_-3px_rgba(242,123,181,0.6)] hover:-translate-y-1 hover:bg-sakura-700 transition-all duration-300 active:scale-95">
+        <!-- Submit -->
+        <div class="pt-3 space-y-4">
+            <button type="submit" class="btn-primary-manhua">
                 Masuk Sekarang
             </button>
-
-            <p class="text-center text-xs font-bold text-slate-600 mt-2 bg-white/50 py-3 rounded-full border border-white/60">
-                Belum punya akun? <a href="{{ route('register') }}" class="text-sakura-700 font-black hover:text-sakura-900 underline decoration-2 underline-offset-4 transition-colors ml-1">Daftar di sini</a>
+            <p class="text-center text-xs font-bold text-slate-500 py-3 rounded-full border border-white/60"
+                style="background: rgba(255,255,255,0.5);">
+                Belum punya akun?
+                <a href="{{ route('register') }}"
+                    class="text-pink-600 font-black hover:text-pink-800 underline decoration-2 underline-offset-3 ml-1 transition-colors">
+                    Daftar di sini
+                </a>
             </p>
         </div>
     </form>
