@@ -7,9 +7,20 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+Route::post('/mood/update', [\App\Http\Controllers\DashboardController::class, 'updateMood'])
+    ->middleware(['auth'])
+    ->name('mood.update');
+
+// Quiz Routes
+Route::get('/quiz/start/{level}', [\App\Http\Controllers\QuizController::class, 'start'])->name('quiz.start')->middleware('auth');
+Route::get('/quiz/show', [\App\Http\Controllers\QuizController::class, 'show'])->name('quiz.show')->middleware('auth');
+Route::post('/quiz/answer', [\App\Http\Controllers\QuizController::class, 'answer'])->name('quiz.answer')->middleware('auth');
+Route::post('/quiz/paw', [\App\Http\Controllers\QuizController::class, 'usePaw'])->name('quiz.paw')->middleware('auth');
+Route::get('/quiz/results', [\App\Http\Controllers\QuizController::class, 'results'])->name('quiz.results')->middleware('auth');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

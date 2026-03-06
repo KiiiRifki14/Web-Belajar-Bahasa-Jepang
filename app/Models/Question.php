@@ -9,6 +9,7 @@ class Question extends Model
     protected $fillable = [
         'level_id',
         'type',
+        'difficulty',
         'question_text',
         'visual_hint_path',
         'options',

@@ -28,6 +28,7 @@ class User extends Authenticatable
         'active_theme',
         'active_mascot_skin',
         'mood',
+        'paw_points',
     ];
 
     /**
