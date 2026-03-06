@@ -175,6 +175,17 @@ class QuizController extends Controller
         $nextLevel = Level::where('region_id', $level->region_id)
             ->where('order', $level->order + 1)
             ->first();
+
+        // Jika tidak ada level selanjutnya di region ini, melompat ke Level 1 di Region berikutnya
+        if (!$nextLevel) {
+            $nextRegion = \App\Models\Region::where('order', $level->region->order + 1)->first();
+            if ($nextRegion) {
+                $nextLevel = Level::where('region_id', $nextRegion->id)
+                    ->where('order', 1)
+                    ->first();
+            }
+        }
+
         if ($nextLevel) {
             UserProgress::firstOrCreate(
                 ['user_id' => $user->id, 'level_id' => $nextLevel->id],

@@ -76,6 +76,12 @@ class BlackBookController extends Controller
     {
         $request->validate(['answer' => 'required', 'question_id' => 'required']);
         $session = session('black_book_session');
+
+        // Validasi session untuk mencegah error 500 jika session hilang/expired
+        if (!$session) {
+            return redirect()->route('black_book.index')->with('error', 'Sesi telah berakhir. Mulai rematch baru.');
+        }
+
         $question = Question::find($request->question_id);
         $user = Auth::user();
 

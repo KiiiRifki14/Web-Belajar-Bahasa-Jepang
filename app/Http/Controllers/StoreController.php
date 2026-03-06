@@ -71,22 +71,32 @@ class StoreController extends Controller
 
     /**
      * Menukarkan kode Voucher (Mystery Gift).
-     * Voucher bersifat sekali pakai (is_used = true).
+     * Setiap user bisa mengklaim kode yang sama hanya 1x seumur hidup.
      */
     public function redeem(Request $request)
     {
         $request->validate(['code' => 'required|string']);
 
-        $voucher = Voucher::where('code', $request->code)->where('is_used', false)->first();
+        $voucher = Voucher::where('code', $request->code)->first();
 
         if (!$voucher) {
-            return back()->with('error', 'Kode voucher tidak valid atau sudah digunakan.');
+            return back()->with('error', 'Kode voucher tidak valid.');
         }
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        // Cek apakah user sudah pernah klaim voucher ini dari history transaksi
+        $alreadyClaimed = Transaction::where('user_id', $user->id)
+            ->where('type', 'voucher')
+            ->where('description', 'Klaim Kode Voucher: ' . $voucher->code)
+            ->exists();
+
+        if ($alreadyClaimed) {
+            return back()->with('error', 'Anda sudah pernah menukar kado dari kode ini!');
+        }
+
         $user->increment('koban', $voucher->koban_reward);
-        $voucher->update(['is_used' => true]);
 
         // Catat riwayat transaksi klaim voucher untuk audit trail
         Transaction::create([
