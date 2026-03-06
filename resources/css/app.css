@@ -45,3 +45,49 @@
     border-width: 0.5px;
     border-color: var(--theme-border);
 }
+
+/* Typography Scale */
+@layer components {
+    .text-display {
+        @apply text-4xl md:text-5xl font-black tracking-tighter leading-tight;
+    }
+
+    .text-heading {
+        @apply text-3xl font-black leading-tight tracking-tight;
+    }
+
+    .text-subheading {
+        @apply text-xl font-black mb-2;
+    }
+
+    .text-label {
+        @apply text-xs font-black uppercase tracking-widest;
+    }
+
+    .text-body {
+        @apply text-base leading-relaxed;
+    }
+
+    .text-small {
+        @apply text-sm opacity-80;
+    }
+
+    .text-caption {
+        @apply text-[10px] font-black uppercase tracking-widest;
+    }
+}
+
+/* Spacing & Layout Utilities */
+@layer components {
+    .p-section {
+        @apply p-6 md:p-8 lg:p-10;
+    }
+
+    .gap-section {
+        @apply gap-6 md:gap-8;
+    }
+
+    .container-section {
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    }
+}

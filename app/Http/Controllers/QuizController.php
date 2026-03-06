@@ -194,7 +194,7 @@ class QuizController extends Controller
             MemoryAlbum::firstOrCreate([
                 'user_id' => $user->id,
                 'level_id' => $level->id,
-                'image_path' => $level->questions()->first()->visual_hint_path ?? 'default_boss.png',
+                'image_path' => $level->questions()->first()?->visual_hint_path ?? 'default_boss.png',
                 'earned_at' => now()
             ]);
         }

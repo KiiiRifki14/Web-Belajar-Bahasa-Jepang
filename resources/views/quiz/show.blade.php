@@ -48,8 +48,8 @@
 
                 <!-- Judul Pertanyaan -->
                 <div class="mb-12">
-                    <span class="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-2 block">Level {{ $level->order }}: {{ $level->name }}</span>
-                    <h2 class="text-3xl font-black leading-tight tracking-tighter" style="color: var(--theme-text);">
+                    <span class="text-label text-gray-400 mb-3 block">Level {{ $level->order }}: {{ $level->name }}</span>
+                    <h2 class="text-heading text-[var(--theme-text)]">
                         {{ $question->question_text }}
                     </h2>
                 </div>
@@ -87,7 +87,7 @@
                         <input type="text" name="answer" placeholder="Tulis jawaban di sini..."
                             class="w-full bg-transparent border-b-4 border-[var(--theme-border)] focus:border-[var(--theme-primary)] text-2xl font-black py-4 outline-none transition-colors"
                             required autocomplete="off">
-                        <div class="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gunakan huruf Romaji sesuai instruksi</div>
+                        <div class="mt-4 text-caption text-gray-400">Gunakan huruf Romaji sesuai instruksi</div>
                     </div>
                     @endif
 
@@ -95,19 +95,17 @@
                     <div class="pt-10 flex items-center justify-between gap-6">
                         <!-- Neko-Punch Lifeline PROTECTION: Cek paw_points dan session -->
                         @if($question->type === 'multiple_choice')
-                        <button type="submit" formaction="{{ route('quiz.use_paw') }}"
-                            class="w-16 h-16 rounded-2xl flex items-center justify-center transition-all bg-indigo-50 dark:bg-indigo-900 border-2 border-indigo-200 dark:border-indigo-700 group hover:scale-110 {{ ($user->paw_points <= 0 || session('neko_punch')) ? 'opacity-20 pointer-events-none' : '' }}"
+                        <button type="submit" formaction="{{ route('quiz.paw') }}"
+                            class="w-16 h-16 rounded-2xl flex items-center justify-center transition-all bg-[var(--theme-secondary)]/20 dark:bg-[var(--theme-secondary)]/30 border-2 border-[var(--theme-secondary)] group hover:scale-110 active:scale-95 {{ ($user->paw_points <= 0 || session('neko_punch')) ? 'opacity-20 pointer-events-none' : '' }}"
                             title="Neko-Punch: Eliminasi opsi salah">
-                            <span class="text-3xl filter" style="filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6));">🐾</span>
-                            <div class="absolute -top-2 -right-2 bg-indigo-600 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                            <span class="text-3xl">🐾</span>
+                            <div class="absolute -top-2 -right-2 bg-[var(--theme-primary)] text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center">
                                 {{ $user->paw_points }}
                             </div>
                         </button>
                         @endif
 
-                        <button type="submit" class="flex-grow text-white py-5 font-black text-xs uppercase tracking-[0.3em] shadow-xl hover:-translate-y-1 transition-all manhua-glow-hover active:scale-95" style="background-color: var(--theme-text); border-radius: 2rem;">
-                            Kirim Jawaban
-                        </button>
+                        <x-btn-primary type="submit" class="flex-grow">Kirim Jawaban</x-btn-primary>
                     </div>
                 </form>
             </div>

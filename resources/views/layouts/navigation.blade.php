@@ -15,6 +15,25 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @auth
+                    <x-nav-link :href="route('store.index')" :active="request()->routeIs('store.*')">
+                        {{ __('Store') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('quiz.start', 1)" :active="request()->routeIs('quiz.*')">
+                        {{ __('Quiz') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('black_book.index')" :active="request()->routeIs('black_book.*')">
+                        {{ __('Black Book') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('album.index')" :active="request()->routeIs('album.*')">
+                        {{ __('Album') }}
+                    </x-nav-link>
+                    @if(Auth::user()->role === 'admin')
+                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
+                        {{ __('Admin') }}
+                    </x-nav-link>
+                    @endif
+                    @endauth
                 </div>
             </div>
 
@@ -70,6 +89,25 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @auth
+            <x-responsive-nav-link :href="route('store.index')" :active="request()->routeIs('store.*')">
+                {{ __('Store') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('quiz.start', 1)" :active="request()->routeIs('quiz.*')">
+                {{ __('Quiz') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('black_book.index')" :active="request()->routeIs('black_book.*')">
+                {{ __('Black Book') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('album.index')" :active="request()->routeIs('album.*')">
+                {{ __('Album') }}
+            </x-responsive-nav-link>
+            @if(Auth::user()->role === 'admin')
+            <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
+                {{ __('Admin') }}
+            </x-responsive-nav-link>
+            @endif
+            @endauth
         </div>
 
         <!-- Responsive Settings Options -->

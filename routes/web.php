@@ -29,8 +29,8 @@ Route::get('/quiz/results', [\App\Http\Controllers\QuizController::class, 'resul
 // Store Routes
 Route::get('/store', [\App\Http\Controllers\StoreController::class, 'index'])->name('store.index')->middleware('auth');
 Route::post('/store/purchase/{item}', [\App\Http\Controllers\StoreController::class, 'purchase'])->name('store.purchase')->middleware('auth');
-Route::post('/store/omikuji', [\App\Http\Controllers\StoreController::class, 'omikuji'])->name('store.omikuji')->middleware('auth');
-Route::post('/store/redeem', [\App\Http\Controllers\StoreController::class, 'redeemVoucher'])->name('store.redeem')->middleware('auth');
+Route::post('/store/omikuji', [\App\Http\Controllers\StoreController::class, 'drawOmikuji'])->name('store.omikuji')->middleware('auth');
+Route::post('/store/redeem', [\App\Http\Controllers\StoreController::class, 'redeem'])->name('store.redeem')->middleware('auth');
 
 // Black Book Routes
 Route::get('/black-book', [\App\Http\Controllers\BlackBookController::class, 'index'])->name('black_book.index')->middleware('auth');
