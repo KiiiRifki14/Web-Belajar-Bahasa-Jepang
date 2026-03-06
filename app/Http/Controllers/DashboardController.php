@@ -27,9 +27,25 @@ class DashboardController extends Controller
         $progress = UserProgress::where('user_id', $user->id)
             ->pluck('status', 'level_id');
 
-        // Hitung mundur ke JLPT (contoh: 7 Desember 2026)
-        $jlptDate = Carbon::parse('2026-12-07');
-        $daysToJLPT = now()->diffInDays($jlptDate, false);
+        // Hitung mundur otomatis ke JLPT terdekat (Ujian selalu Minggu pertama Juli/Desember)
+        $now = now()->startOfDay();
+        $year = $now->year;
+
+        $julyJLPT = Carbon::parse("first sunday of july {$year}");
+        $decemberJLPT = Carbon::parse("first sunday of december {$year}");
+
+        if ($now->isBefore($julyJLPT) || $now->isSameDay($julyJLPT)) {
+            $nextJLPT = $julyJLPT;
+            $jlptMonth = 'Juli';
+        } elseif ($now->isBefore($decemberJLPT) || $now->isSameDay($decemberJLPT)) {
+            $nextJLPT = $decemberJLPT;
+            $jlptMonth = 'Desember';
+        } else {
+            $nextJLPT = Carbon::parse("first sunday of july " . ($year + 1));
+            $jlptMonth = 'Juli';
+        }
+
+        $daysToJLPT = $now->diffInDays($nextJLPT, false);
 
         // Ambil satu catatan rahasia secara acak untuk Neko-Sensei
         $secretNote = SecretNote::inRandomOrder()->first();
@@ -37,7 +53,7 @@ class DashboardController extends Controller
         // Cek apakah bisa klaim hadiah harian
         $canClaimDaily = !$user->last_daily_claim || !Carbon::parse($user->last_daily_claim)->isToday();
 
-        return view('dashboard', compact('user', 'regions', 'progress', 'daysToJLPT', 'secretNote', 'canClaimDaily'));
+        return view('dashboard', compact('user', 'regions', 'progress', 'daysToJLPT', 'jlptMonth', 'secretNote', 'canClaimDaily'));
     }
 
     /**

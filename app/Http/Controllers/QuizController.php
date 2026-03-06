@@ -36,6 +36,13 @@ class QuizController extends Controller
             return back()->with('error', 'Level ini masih terkunci! Selesaikan level sebelumnya.');
         }
 
+        // Fitur Cek Poin (Checkpoint) Otomatis
+        $existingQuiz = session('quiz');
+        if ($existingQuiz && $existingQuiz['level_id'] === $level->id) {
+            // Jika ada sesi kuis untuk level ini yang belum selesai, lanjutkan
+            return redirect()->route('quiz.show')->with('success', 'Kembali dari Checkpoint! Lanjutkan perjuanganmu.');
+        }
+
         // Ambil soal berdasarkan mood user (Dynamic Difficulty)
         $query = Question::where('level_id', $level->id);
 
@@ -50,7 +57,7 @@ class QuizController extends Controller
             return back()->with('error', 'Belum ada soal untuk level ini.');
         }
 
-        // Simpan sesi kuis (Quiz Engine state)
+        // Simpan sesi kuis (Quiz Engine state - Mulai Baru)
         session(['quiz' => [
             'level_id' => $level->id,
             'questions' => $questions->pluck('id')->toArray(),
@@ -58,7 +65,7 @@ class QuizController extends Controller
             'correct_answers' => 0
         ]]);
 
-        return redirect()->route('quiz.show');
+        return redirect()->route('quiz.show')->with('success', 'Kuis Dimulai! Ganbatte!');
     }
 
     /**
@@ -129,6 +136,8 @@ class QuizController extends Controller
             if ($user->current_streak % 5 === 0) {
                 $user->increment('paw_points');
             }
+
+            session()->flash('correct', 'Sugoi! Jawaban Anda benar!');
         } else {
             // Reset streak jika salah (The streak legend)
             $user->update(['current_streak' => 0]);
@@ -142,6 +151,8 @@ class QuizController extends Controller
             $blackBook->correct_streak = 0; // Reset mastery progress
             $blackBook->is_mastered = false;
             $blackBook->save();
+
+            session()->flash('wrong', 'Oops! Jawaban Anda kurang tepat. Tetap semangat!');
         }
 
         $quiz['current_index']++;

@@ -87,42 +87,40 @@
         </div>
 
         <!-- Pop-up O-mikuji (Eksklusif: Animasi Box Guncang) -->
-        <template x-if="showOmikuji">
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-md">
-                <div class="glass-panel shadow-2xl max-w-lg w-full relative text-center border-white/60 p-10 overflow-hidden" style="border-radius: 3.5rem;" @click.away="showOmikuji = false">
-                    <!-- Decor inside modal -->
-                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-red-300 opacity-20 blur-[50px] rounded-full pointer-events-none"></div>
-                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-300 opacity-20 blur-[50px] rounded-full pointer-events-none"></div>
+        <div x-show="showOmikuji" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+            <div class="glass-panel shadow-2xl max-w-lg w-full relative text-center border-white/60 p-10 overflow-hidden" style="border-radius: 3.5rem;" @click.away="if('{{ session('omikuji_result') ? 'true' : 'false' }}' == 'false') showOmikuji = false">
+                <!-- Decor inside modal -->
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-red-300 opacity-20 blur-[50px] rounded-full pointer-events-none"></div>
+                <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-300 opacity-20 blur-[50px] rounded-full pointer-events-none"></div>
 
-                    @if(session('omikuji_result'))
-                    <!-- Hasil Ramalan -->
-                    <div class="animate-fadeIn relative z-10 py-4">
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-8 block">Hasil Ramalan Anda</span>
-                        <div class="text-7xl mb-10 filter drop-shadow-md">📜</div>
-                        <h4 class="font-serif text-2xl font-bold italic text-gray-800 leading-relaxed mb-12">
-                            "{{ session('omikuji_result')['message'] }}"
-                        </h4>
-                        <button @click="showOmikuji = false" class="px-10 py-4 bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-full shadow-glow transition-all duration-300 hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-widest">Arigatou</button>
-                    </div>
-                    @else
-                    <!-- Box Guncang Sebelum Tarik -->
-                    <div x-data="{ shaking: false }" class="relative z-10 py-4">
-                        <h3 class="font-serif text-3xl font-bold text-gray-800 mb-12 italic">Guncang Kotak Ramalan</h3>
-                        <div class="text-[8rem] inline-block mb-12 filter drop-shadow-xl" :class="shaking ? 'animate-shake' : 'animate-float-slow'">🎍</div>
-                        <div class="flex flex-col gap-6">
-                            <form action="{{ route('store.omikuji') }}" method="POST" @submit="shaking = true">
-                                @csrf
-                                <button type="submit" class="w-full py-5 bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-full shadow-glow transition-all duration-300 hover:-translate-y-1 active:scale-95 text-lg uppercase tracking-widest tracking-wide flex items-center justify-center">
-                                    <span class="mr-2">⛩️</span> TARIK SEKARANG!
-                                </button>
-                            </form>
-                            <button @click="showOmikuji = false" class="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors">Batal</button>
-                        </div>
-                    </div>
-                    @endif
+                @if(session('omikuji_result'))
+                <!-- Hasil Ramalan -->
+                <div class="animate-fadeIn relative z-10 py-4">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-8 block">Hasil Ramalan Anda</span>
+                    <div class="text-7xl mb-10 filter drop-shadow-md">📜</div>
+                    <h4 class="font-serif text-2xl font-bold italic text-slate-800 leading-relaxed mb-12">
+                        "{{ session('omikuji_result')['message'] ?? 'Peruntungan yang baik menanti Anda.' }}"
+                    </h4>
+                    <button @click="showOmikuji = false" class="px-10 py-4 bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-full shadow-glow transition-all duration-300 hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-widest">Arigatou</button>
                 </div>
+                @else
+                <!-- Box Guncang Sebelum Tarik -->
+                <div x-data="{ shaking: false }" class="relative z-10 py-4">
+                    <h3 class="font-serif text-3xl font-bold text-slate-800 mb-12 italic">Guncang Kotak Ramalan</h3>
+                    <div class="text-[8rem] inline-block mb-12 filter drop-shadow-xl" :class="shaking ? 'animate-shake' : 'animate-float-slow'">🎍</div>
+                    <div class="flex flex-col gap-6">
+                        <form action="{{ route('store.omikuji') }}" method="POST" @submit="shaking = true; $el.submit()">
+                            @csrf
+                            <button type="submit" class="w-full py-5 bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-full shadow-[0_0_20px_rgba(240,100,100,0.4)] transition-all duration-300 hover:-translate-y-1 active:scale-95 text-lg uppercase tracking-widest tracking-wide flex items-center justify-center">
+                                <span class="mr-2">⛩️</span> TARIK SEKARANG!
+                            </button>
+                        </form>
+                        <button @click="showOmikuji = false" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Batal</button>
+                    </div>
+                </div>
+                @endif
             </div>
-        </template>
+        </div>
     </div>
 
     <!-- Animasi Box Guncang -->

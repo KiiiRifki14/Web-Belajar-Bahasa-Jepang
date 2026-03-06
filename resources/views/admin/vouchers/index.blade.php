@@ -55,7 +55,7 @@
                                         @endif
                                     </td>
                                     <td class="py-4 px-6">
-                                        {{ $voucher->expires_at ? $voucher->expires_at->format('M d, Y') : 'Never' }}
+                                        {{ $voucher->expires_at ? \Carbon\Carbon::parse($voucher->expires_at)->format('M d, Y') : 'Never' }}
                                     </td>
                                     <td class="py-4 px-6">
                                         <form action="{{ route('admin.vouchers.destroy', $voucher) }}" method="POST" onsubmit="return confirm('Delete this voucher?');">

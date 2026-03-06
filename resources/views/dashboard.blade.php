@@ -10,13 +10,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
                 <!-- Widget Hitung Mundur JLPT (Tokyo Station Style) -->
-                <div class="glass-panel flex flex-col items-center justify-center text-center hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden manhua-glow py-8 rounded-[2rem] border border-slate-200/60">
+                <div class="glass-panel flex flex-col items-center justify-center text-center hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden manhua-glow p-6 sm:p-8 rounded-[2rem] border border-slate-200/60 max-w-full">
                     <!-- LED ticker background effect -->
                     <div class="absolute inset-0 bg-slate-900 opacity-90 z-0"></div>
-                    <div class="relative z-10 flex flex-col items-center">
-                        <div class="font-mono text-sakura-400 text-[10px] tracking-[0.3em] uppercase mb-3 animate-pulse">Next Train: JLPT N5</div>
-                        <div class="font-mono text-4xl xl:text-5xl font-black text-white drop-shadow-md tabular-nums tracking-widest flex items-baseline gap-1">
-                            {{ str_pad($daysToJLPT, 3, '0', STR_PAD_LEFT) }} <span class="text-[10px] text-slate-400 font-sans font-bold tracking-widest uppercase ml-1 opacity-80">Days</span>
+                    <div class="relative z-10 flex flex-col items-center w-full overflow-hidden">
+                        <div class="font-mono text-sakura-400 text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-3 animate-pulse whitespace-nowrap">Next Train: JLPT N5 ({{ $jlptMonth }})</div>
+                        <div class="font-mono text-3xl sm:text-4xl xl:text-5xl font-black text-white drop-shadow-md tabular-nums tracking-wider sm:tracking-widest flex flex-wrap justify-center items-baseline gap-1 break-all px-2">
+                            {{ str_pad($daysToJLPT, 3, '0', STR_PAD_LEFT) }} <span class="text-[9px] sm:text-[10px] text-slate-400 font-sans font-bold tracking-widest uppercase sm:ml-1 opacity-80 whitespace-nowrap">Days</span>
                         </div>
                     </div>
                 </div>
@@ -24,18 +24,18 @@
                 <!-- Theme Switcher Panel -->
                 <div class="manhua-card p-6 border-sakura-200 flex flex-col justify-center">
                     <h3 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-4 block text-center">Aesthetic Theme</h3>
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid grid-cols-3 gap-3">
                         <form action="{{ route('theme.update') }}" method="POST">
                             @csrf
-                            <button type="submit" name="theme" value="senja" class="w-full h-12 rounded-xl border-2 {{ ($user->active_theme ?? 'senja') === 'senja' ? 'border-sakura-400 bg-sakura-50' : 'border-slate-200 bg-white/60 hover:bg-slate-50' }} flex items-center justify-center text-xl transition-transform hover:scale-105 shadow-sm" title="Senja di Shinjuku">🌆</button>
+                            <button type="submit" name="theme" value="senja" class="w-full h-14 rounded-xl border-2 {{ ($user->active_theme ?? 'senja') === 'senja' ? 'border-sakura-400 bg-sakura-50' : 'border-slate-200 bg-white/60 hover:bg-slate-50' }} flex items-center justify-center text-2xl transition-transform hover:scale-105 shadow-sm" title="Senja di Shinjuku">🌆</button>
                         </form>
                         <form action="{{ route('theme.update') }}" method="POST">
                             @csrf
-                            <button type="submit" name="theme" value="perpustakaan" class="w-full h-12 rounded-xl border-2 {{ ($user->active_theme ?? 'senja') === 'perpustakaan' ? 'border-matcha-500 bg-matcha-50' : 'border-slate-200 bg-white/60 hover:bg-slate-50' }} flex items-center justify-center text-xl transition-transform hover:scale-105 shadow-sm" title="Perpustakaan Tua">🎐</button>
+                            <button type="submit" name="theme" value="perpustakaan" class="w-full h-14 rounded-xl border-2 {{ ($user->active_theme ?? 'senja') === 'perpustakaan' ? 'border-matcha-500 bg-matcha-50' : 'border-slate-200 bg-white/60 hover:bg-slate-50' }} flex items-center justify-center text-2xl transition-transform hover:scale-105 shadow-sm" title="Perpustakaan Tua">🎐</button>
                         </form>
                         <form action="{{ route('theme.update') }}" method="POST">
                             @csrf
-                            <button type="submit" name="theme" value="neon" class="w-full h-12 rounded-xl border-2 {{ ($user->active_theme ?? 'senja') === 'neon' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white/60 hover:bg-slate-50' }} flex items-center justify-center text-xl transition-transform hover:scale-105 shadow-sm" title="Tokyo Malam">🌌</button>
+                            <button type="submit" name="theme" value="neon" class="w-full h-14 rounded-xl border-2 {{ ($user->active_theme ?? 'senja') === 'neon' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white/60 hover:bg-slate-50' }} flex items-center justify-center text-2xl transition-transform hover:scale-105 shadow-sm" title="Tokyo Malam">🌌</button>
                         </form>
                     </div>
                 </div>

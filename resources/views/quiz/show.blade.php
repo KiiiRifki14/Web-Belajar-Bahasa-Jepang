@@ -12,26 +12,31 @@
             <div class="absolute inset-0 bg-gradient-to-br from-sakura-300/10 to-matcha-300/10 z-0 pointer-events-none"></div>
 
             <div class="relative z-10 w-full max-w-lg">
-                <!-- Visual Hint Image: Gambar petunjuk soal -->
-                <div class="glass-panel p-2 shadow-glow group overflow-hidden" style="border-radius: 2rem;">
-                    @if($question->visual_hint_path)
+                @if($question->visual_hint_path)
+                <!-- Visual Hint Image: Hanya tampil jika ada gambar -->
+                <div class="glass-panel p-2 shadow-glow group overflow-hidden mb-12" style="border-radius: 2rem;">
                     <img src="{{ asset('storage/' . $question->visual_hint_path) }}" class="w-full aspect-video object-cover rounded-[1.5rem] transition-transform group-hover:scale-105 duration-1000" alt="Visual Hint">
-                    @else
-                    <!-- Tampilan default jika tidak ada gambar -->
-                    <div class="w-full aspect-video bg-gradient-to-br from-sakura-50/50 to-matcha-50/50 flex items-center justify-center text-6xl rounded-[1.5rem] mix-blend-multiply">
-                        <span class="opacity-50 blur-[1px]">⛩️</span>
-                    </div>
-                    @endif
                 </div>
-
-                <!-- Neko-Sensei Reflection Box: Pesan motivasi -->
-                <div class="glass-panel p-6 shadow-glass-sm relative mt-12 group" style="border-radius: 2rem;">
+                <!-- Neko-Sensei Reflection Box khusus gambar -->
+                <div class="glass-panel p-6 shadow-glass-sm relative group" style="border-radius: 2rem;">
                     <div class="absolute -top-10 -left-6 text-6xl transform group-hover:-rotate-12 transition-transform duration-500 animate-float-slow filter drop-shadow-md z-20">🐱</div>
                     <div class="absolute -top-4 left-6 w-4 h-4 bg-white/60 rotate-45 border-l border-t border-white/40"></div>
-                    <p class="text-sm font-serif italic text-gray-700 leading-relaxed pl-6">
+                    <p class="text-sm font-serif italic text-slate-700 leading-relaxed pl-6">
                         "Amati gambar di atas dengan seksama. Bahasa Jepang bukan hanya soal kata, tapi juga rasa dan nuansa."
                     </p>
                 </div>
+                @else
+                <!-- Tampilan Default jika tidak ada gambar -->
+                <div class="flex flex-col items-center justify-center text-center">
+                    <div class="text-[120px] filter drop-shadow-xl animate-float-slow mb-6">🐱</div>
+                    <div class="glass-panel p-6 shadow-glass-sm relative group w-full" style="border-radius: 2rem;">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white/60 rotate-45 border-l border-t border-white/40"></div>
+                        <p class="text-base font-serif italic text-slate-700 leading-relaxed font-semibold">
+                            "Fokus, muridku! Perhatikan pertanyaan di sebelah kanan. Jawaban yang benar selalu berada di antara pilihan yang ada."
+                        </p>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
 
@@ -42,16 +47,31 @@
             @endphp
             <div class="w-full max-w-xl glass-panel p-8 md:p-12 shadow-2xl relative z-10" x-data="{ progress: {{ $progress }}, selected: null, punch: {{ session('neko_punch') ? 'true' : 'false' }} }" style="border-radius: 3rem;">
                 <!-- Progress Bar: Indikator sejauh mana kuis berlangsung -->
-                <div class="mb-10 w-full bg-white/30 h-2 rounded-full overflow-hidden shadow-inner backdrop-blur-sm"
+                <div class="mb-10 w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner backdrop-blur-sm"
                     :style="{ '--progress': progress + '%' }">
                     <div class="h-full transition-all duration-700 ease-out bg-gradient-to-r from-sakura-400 to-matcha-400 shadow-[0_0_10px_rgba(242,123,181,0.5)]"
                         style="width: var(--progress);"></div>
                 </div>
 
+                <!-- Answer Feedback Animation -->
+                @if(session('correct'))
+                <div class="mb-6 animate-[bounce_0.5s_ease-in-out_2] flex justify-center items-center text-green-500 bg-green-50/80 px-4 py-2 rounded-2xl border border-green-200">
+                    <span class="text-3xl mr-2">✨</span>
+                    <span class="font-bold text-sm uppercase tracking-widest">{{ session('correct') }}</span>
+                </div>
+                @endif
+
+                @if(session('wrong'))
+                <div class="mb-6 animate-[shake_0.4s_ease-in-out_1] flex justify-center items-center text-red-500 bg-red-50/80 px-4 py-2 rounded-2xl border border-red-200">
+                    <span class="text-3xl mr-2">💢</span>
+                    <span class="font-bold text-sm uppercase tracking-widest">{{ session('wrong') }}</span>
+                </div>
+                @endif
+
                 <!-- Judul Pertanyaan -->
                 <div class="mb-10 text-center">
                     <span class="text-[10px] font-bold uppercase tracking-widest text-sakura-600 mb-4 block">Arc {{ $level->order }}: {{ $level->name }}</span>
-                    <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+                    <h2 class="font-serif text-3xl md:text-4xl font-bold text-slate-800 leading-tight">
                         {{ $question->question_text }}
                     </h2>
                 </div>
@@ -63,11 +83,21 @@
 
                     @if($question->type === 'multiple_choice')
                     <div class="grid grid-cols-1 gap-4">
+                        @php
+                        // Identifikasi index dari jawaban-jawaban yang salah
+                        $wrongIndices = [];
+                        foreach($question->options as $idx => $opt) {
+                        if(trim(strtolower($opt)) !== trim(strtolower($question->correct_answer))) {
+                        $wrongIndices[] = $idx;
+                        }
+                        }
+                        // Pilih hanya SATU jawaban salah untuk dihapus oleh Neko-Punch
+                        $targetHideIndex = count($wrongIndices) > 0 ? $wrongIndices[0] : -1;
+                        @endphp
                         @foreach($question->options as $key => $option)
                         @php
-                        $isWrong = ($option !== $question->correct_answer);
-                        // Sembunyikan opsi salah hanya jika punch aktif DAN ini bukan opsi pertama (untuk keamanan UI)
-                        $shouldHide = $isWrong && $loop->index > 0;
+                        // Sembunyikan hanya 1 opsi salah yang menjadi target
+                        $shouldHide = ($loop->index === $targetHideIndex);
                         @endphp
                         <label
                             x-show="!punch || (punch && !{{ $shouldHide ? 'true' : 'false' }})"
@@ -106,7 +136,7 @@
                     <div class="pt-8 flex items-center justify-between gap-4">
                         <!-- Neko-Punch Lifeline PROTECTION: Cek paw_points dan session -->
                         @if($question->type === 'multiple_choice')
-                        <button type="submit" formaction="{{ route('quiz.paw') }}"
+                        <button type="submit" formnovalidate formaction="{{ route('quiz.paw') }}"
                             class="relative w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all duration-300 {{ ($user->paw_points <= 0 || session('neko_punch')) ? 'bg-gray-100/50 opacity-40 cursor-not-allowed border border-gray-200' : 'bg-matcha-50/80 backdrop-blur-sm border border-matcha-300 shadow-glass-sm hover:shadow-glow hover:scale-105 active:scale-95 group' }}"
                             title="Neko-Punch: Eliminasi opsi salah"
                             {{ ($user->paw_points <= 0 || session('neko_punch')) ? 'disabled' : '' }}>
@@ -150,7 +180,7 @@
     </div>
     </div>
 
-    <!-- Gaya Kustom Manhua -->
+    <!-- Gaya Kustom Manhua & Feedback -->
     <style>
         [x-cloak] {
             display: none !important;
@@ -158,6 +188,24 @@
 
         .manhua-glow-hover:hover {
             box-shadow: 0 0 25px rgba(236, 72, 153, 0.4);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-5px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(5px);
+            }
         }
     </style>
 </x-app-layout>

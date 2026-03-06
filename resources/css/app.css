@@ -26,8 +26,19 @@
         background-attachment: fixed;
     }
 
+    .theme-senja {
+        --theme-bg-start: #fff1eb;
+        --theme-bg-end: #ace0f9;
+        --theme-text: #4a2f4a;
+        --theme-primary: #f29cbb;
+        --theme-secondary: #90b3c4;
+        --theme-glow: rgba(242, 122, 154, 0.4);
+        --theme-border: rgba(255, 255, 255, 0.4);
+    }
+
     .theme-perpustakaan {
-        --theme-bg: #fdf6e3;
+        --theme-bg-start: #fdf6e3;
+        --theme-bg-end: #f5eedc;
         --theme-text: #586e75;
         --theme-primary: #b58900;
         --theme-secondary: #859900;
@@ -36,11 +47,12 @@
     }
 
     .theme-neon {
-        --theme-bg: #0d0221;
-        --theme-text: #e0e0e0;
-        --theme-primary: #00f5d4;
-        --theme-secondary: #fee440;
-        --theme-glow: rgba(0, 245, 212, 0.6);
+        --theme-bg-start: #11042b;
+        --theme-bg-end: #0a011a;
+        --theme-text: #e0eaff;
+        --theme-primary: #21d4fd;
+        --theme-secondary: #b721ff;
+        --theme-glow: rgba(33, 212, 253, 0.6);
         --theme-border: rgba(255, 255, 255, 0.1);
     }
 }

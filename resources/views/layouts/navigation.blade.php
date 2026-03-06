@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+<nav x-data="{ open: false }" class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-white/50 shadow-glass-sm sticky top-0 z-50 transition-all duration-300">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -12,24 +12,24 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="uppercase tracking-widest font-black text-[10px] sm:text-xs">
+                        {{ __('Beranda') }}
                     </x-nav-link>
                     @auth
-                    <x-nav-link :href="route('store.index')" :active="request()->routeIs('store.*')">
-                        {{ __('Store') }}
+                    <x-nav-link :href="route('store.index')" :active="request()->routeIs('store.*')" class="uppercase tracking-widest font-black text-[10px] sm:text-xs">
+                        {{ __('Pasar') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('quiz.start', 1)" :active="request()->routeIs('quiz.*')">
-                        {{ __('Quiz') }}
+                    <x-nav-link :href="route('quiz.start', 1)" :active="request()->routeIs('quiz.*')" class="uppercase tracking-widest font-black text-[10px] sm:text-xs">
+                        {{ __('Perjalanan') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('black_book.index')" :active="request()->routeIs('black_book.*')">
-                        {{ __('Black Book') }}
+                    <x-nav-link :href="route('black_book.index')" :active="request()->routeIs('black_book.*')" class="uppercase tracking-widest font-black text-[10px] sm:text-xs">
+                        {{ __('Buku Hitam') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('album.index')" :active="request()->routeIs('album.*')">
-                        {{ __('Album') }}
+                    <x-nav-link :href="route('album.index')" :active="request()->routeIs('album.*')" class="uppercase tracking-widest font-black text-[10px] sm:text-xs">
+                        {{ __('Kenangan') }}
                     </x-nav-link>
                     @if(Auth::user()->role === 'admin')
-                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
+                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" class="uppercase tracking-widest font-black text-[10px] sm:text-xs text-sakura-600">
                         {{ __('Admin') }}
                     </x-nav-link>
                     @endif
@@ -62,7 +62,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
@@ -85,26 +85,26 @@
 
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
+        <div class="pt-2 pb-3 space-y-1 bg-white/50 backdrop-blur-md rounded-b-2xl border-b border-white/40 shadow-sm mx-2">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                {{ __('Beranda') }}
             </x-responsive-nav-link>
             @auth
             <x-responsive-nav-link :href="route('store.index')" :active="request()->routeIs('store.*')">
-                {{ __('Store') }}
+                {{ __('Pasar Koban') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('quiz.start', 1)" :active="request()->routeIs('quiz.*')">
-                {{ __('Quiz') }}
+                {{ __('Perjalanan') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('black_book.index')" :active="request()->routeIs('black_book.*')">
-                {{ __('Black Book') }}
+                {{ __('Buku Hitam') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('album.index')" :active="request()->routeIs('album.*')">
-                {{ __('Album') }}
+                {{ __('Buku Kenangan') }}
             </x-responsive-nav-link>
             @if(Auth::user()->role === 'admin')
             <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
-                {{ __('Admin') }}
+                {{ __('Kuil Admin') }}
             </x-responsive-nav-link>
             @endif
             @endauth
@@ -127,7 +127,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
