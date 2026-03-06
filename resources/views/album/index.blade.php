@@ -1,9 +1,14 @@
 <x-app-layout>
-    <div class="py-12 min-h-screen">
+    {{--
+        Buku Kenangan (Memory Album) - Nihongo Odyssey
+        Menyimpan pencapaian kuis Boss Level dalam format polaroid estetik.
+    --}}
+    <div class="py-12 bg-indigo-50 dark:bg-gray-950 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <!-- Header -->
-            <div class="text-center mb-16 relative">
+            <!-- Header Galeri -->
+            <div class="text-center mb-16">
+                <span class="text-[10px] font-black uppercase tracking-[0.6em] text-indigo-400 mb-4 block animate-pulse">Your Legends</span>
                 <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
                     <span class="text-[170px] font-black tracking-tighter uppercase italic">Memories</span>
                 </div>

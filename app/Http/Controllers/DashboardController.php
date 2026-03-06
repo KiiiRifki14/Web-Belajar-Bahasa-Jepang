@@ -18,52 +18,41 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // Fetch all regions with their levels to build the map
-        $regions = Region::with(['levels' => function ($query) {
-            $query->orderBy('order');
-        }])->orderBy('order')->get();
 
-        // Fetch user progress
-        $progress = UserProgress::where('user_id', $user->id)
-            ->pluck('status', 'level_id')
-            ->toArray();
+        // Ambil semua wilayah dan level untuk peta
+        $regions = Region::with('levels')->orderBy('order')->get();
 
-        // Get a random active secret note
-        $secretNote = SecretNote::where('is_active', true)->inRandomOrder()->first();
+        // Ambil progress user
+        $progress = UserLevel::where('user_id', $user->id)
+            ->pluck('status', 'level_id');
 
-        // Countdown to JLPT December
-        $jlptDate = Carbon::create(Carbon::now()->year, 12, 1, 0, 0, 0);
-        if ($jlptDate->isPast()) {
-            $jlptDate->addYear();
-        }
-        $daysToJLPT = (int) now()->diffInDays($jlptDate);
+        // Hitung mundur ke JLPT (contoh: 7 Desember 2026)
+        $jlptDate = Carbon::parse('2026-12-07');
+        $daysToJLPT = now()->diffInDays($jlptDate, false);
 
-        // Daily Reward Check
-        $canClaimDaily = !$user->last_daily_reward_at || !now()->isSameDay($user->last_daily_reward_at);
+        // Ambil satu catatan rahasia secara acak untuk Neko-Sensei
+        $secretNote = SecretNote::inRandomOrder()->first();
 
-        return view('dashboard', compact('user', 'regions', 'progress', 'secretNote', 'daysToJLPT', 'canClaimDaily'));
+        // Cek apakah bisa klaim hadiah harian
+        $canClaimDaily = !$user->last_daily_claim || !Carbon::parse($user->last_daily_claim)->isToday();
+
+        return view('dashboard', compact('user', 'regions', 'progress', 'daysToJLPT', 'secretNote', 'canClaimDaily'));
     }
 
+    /**
+     * Klaim hadiah Koban harian.
+     */
     public function claimDaily()
     {
         $user = Auth::user();
 
-        if ($user->last_daily_reward_at && now()->isSameDay($user->last_daily_reward_at)) {
-            return back()->with('error', 'You already claimed your daily gift!');
+        if (!$user->last_daily_claim || !Carbon::parse($user->last_daily_claim)->isToday()) {
+            $user->increment('koban', 50);
+            $user->update(['last_daily_claim' => now()]);
+            return back()->with('success', 'Selamat! Anda mendapat 50 Koban hari ini! 🪙');
         }
 
-        $reward = 50; // Simple reward
-        $user->koban += $reward;
-        $user->last_daily_reward_at = now();
-        $user->save();
-
-        Transaction::create([
-            'user_id' => $user->id,
-            'amount' => $reward,
-            'type' => 'reward',
-            'description' => 'Daily Login Reward'
-        ]);
-
-        return back()->with('success', "Okaeri! You received {$reward} Koban as a daily gift.");
+        return back()->with('error', 'Anda sudah mengklaim hadiah hari ini.');
     }
 
     public function updateMood(Request $request)

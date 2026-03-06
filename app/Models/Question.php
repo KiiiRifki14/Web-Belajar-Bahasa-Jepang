@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model
 {
+    /**
+     * Field untuk soal kuis.
+     * options disimpan dalam format JSON.
+     */
     protected $fillable = [
         'level_id',
         'type',
-        'difficulty',
         'question_text',
         'visual_hint_path',
         'options',
@@ -18,9 +21,12 @@ class Question extends Model
     ];
 
     protected $casts = [
-        'options' => 'array',
+        'options' => 'array'
     ];
 
+    /**
+     * Relasi ke Level/Materi kuis.
+     */
     public function level()
     {
         return $this->belongsTo(Level::class);

@@ -3,186 +3,199 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Level;
 use App\Models\Question;
-use App\Models\UserProgress;
+use App\Models\Level;
+use App\Models\User;
+use App\Models\UserLevel;
 use App\Models\BlackBook;
 use App\Models\Transaction;
-use App\Models\User;
+use App\Models\MemoryAlbum;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class QuizController extends Controller
 {
+    /**
+     * Memulai sesi kuis untuk level tertentu.
+     * Mengatur status level menjadi 'unlocked' jika sebelumnya 'locked'.
+     */
     public function start(Level $level)
     {
         $user = Auth::user();
 
-        // 1. Check Gatekeeper logic (Level 10, 20 etc)
-        if ($level->order > 1 && $level->order % 10 == 0) {
-            // Check if user has required_streak (defined in levels table)
-            if ($user->current_streak < $level->required_streak) {
-                return redirect()->route('dashboard')->with('error', "Gatekeeper says: You need a streak of {$level->required_streak} to enter this level!");
-            }
+        // Pastikan level terdaftar di progress user
+        $progress = UserLevel::firstOrCreate(
+            ['user_id' => $user->id, 'level_id' => $level->id],
+            ['status' => 'unlocked']
+        );
+
+        // Jika level masih terkunci, jangan izinkan akses
+        if ($progress->status === 'locked') {
+            return back()->with('error', 'Level ini masih terkunci! Selesaikan level sebelumnya.');
         }
 
-        // 2. Fetch Questions based on Mood
+        // Ambil soal berdasarkan mood user (Dynamic Difficulty)
         $query = Question::where('level_id', $level->id);
 
-        // Dynamic Difficulty based on Mood
+        // Logika Mood Tracker: Jika mood buruk, ambil soal yang lebih mudah (Multiple Choice)
         if (in_array($user->mood, ['sad', 'angry'])) {
-            $query->where('difficulty', '<=', 2); // Exclude hard questions
+            $query->where('type', 'multiple_choice');
         }
 
-        $questions = $query->inRandomOrder()->take(5)->get();
+        $questions = $query->inRandomOrder()->get();
 
         if ($questions->isEmpty()) {
-            return redirect()->route('dashboard')->with('error', 'Sensei is still preparing questions for this level.');
+            return back()->with('error', 'Belum ada soal untuk level ini.');
         }
 
-        // 3. Initialize Quiz Session
+        // Simpan sesi kuis (Quiz Engine state)
         session(['quiz' => [
             'level_id' => $level->id,
             'questions' => $questions->pluck('id')->toArray(),
             'current_index' => 0,
-            'score' => 0,
-            'correct_count' => 0,
-            'paw_used_this_quiz' => false
+            'correct_answers' => 0
         ]]);
 
         return redirect()->route('quiz.show');
     }
 
+    /**
+     * Menampilkan soal kuis saat ini.
+     * Mengirimkan data ke Blade split-screen (Visual vs Kuis).
+     */
     public function show()
     {
         $quiz = session('quiz');
         if (!$quiz) return redirect()->route('dashboard');
 
-        $questionId = $quiz['questions'][$quiz['current_index']];
+        $currentIndex = $quiz['current_index'];
+        $questionId = $quiz['questions'][$currentIndex];
         $question = Question::find($questionId);
-        $level = Level::find($quiz['level_id']);
+        $level = Level::with('region')->find($quiz['level_id']);
+        $user = Auth::user();
 
-        return view('quiz.show', compact('question', 'level', 'quiz'));
+        return view('quiz.show', compact('question', 'level', 'currentIndex', 'quiz', 'user'));
     }
 
+    /**
+     * Mengaktifkan Neko-Punch (Lifeline).
+     * Mengurangi paw_points dan memberikan sinyal ke view untuk menyembunyikan opsi salah via session.
+     */
+    public function usePaw()
+    {
+        $user = Auth::user();
+        if ($user->paw_points > 0) {
+            $user->decrement('paw_points');
+            session(['neko_punch' => true]);
+            return back()->with('success', 'Neko-Punch diaktifkan! 🐾');
+        }
+        return back()->with('error', 'Paw Points tidak cukup!');
+    }
+
+    /**
+     * Memproses jawaban kuis.
+     * Mengatur skor, streak, dan mencatat kesalahan ke Buku Hitam (Automated Tracker).
+     */
     public function answer(Request $request)
     {
-        $request->validate(['answer' => 'required|string']);
-        $user = Auth::user();
+        $request->validate(['answer' => 'required', 'question_id' => 'required']);
+
         $quiz = session('quiz');
         if (!$quiz) return redirect()->route('dashboard');
 
-        $question = Question::find($quiz['questions'][$quiz['current_index']]);
-        $isCorrect = trim(strtolower($request->answer)) === trim(strtolower($question->correct_answer));
+        $question = Question::find($request->question_id);
+        $user = Auth::user();
+
+        // Hapus session Neko-Punch setelah digunakan/dijawab agar tidak terbawa ke soal selanjutnya
+        session()->forget('neko_punch');
+
+        $isCorrect = (trim(strtolower($request->answer)) === trim(strtolower($question->correct_answer)));
 
         if ($isCorrect) {
-            $quiz['score'] += ($question->difficulty * 10);
-            $quiz['correct_count']++;
+            $quiz['correct_answers']++;
+            $user->increment('current_streak');
 
-            // Streak Logic
-            $user->current_streak++;
-            if ($user->current_streak > $user->highest_streak) {
-                $user->highest_streak = $user->current_streak;
-            }
-
-            // Award Koban
-            $user->koban += ($question->difficulty * 2);
-
-            // Neko-Punch Reward: 1 Paw every 5 streak
-            if ($user->current_streak > 0 && $user->current_streak % 5 == 0) {
-                $user->paw_points++;
+            // Hadiah Paw Points setiap kelipatan 5 streak (Incentive)
+            if ($user->current_streak % 5 === 0) {
+                $user->increment('paw_points');
             }
         } else {
-            // Reset streak on wrong answer
-            $user->current_streak = 0;
+            // Reset streak jika salah (The streak legend)
+            $user->update(['current_streak' => 0]);
 
-            // Save to Black Book
+            // Catat ke Buku Hitam (The Tracker) untuk dipelajari nanti di mode Rematch
             $blackBook = BlackBook::firstOrNew([
                 'user_id' => $user->id,
                 'question_id' => $question->id
             ]);
-            $blackBook->wrong_count += 1;
-            $blackBook->correct_streak = 0; // Reset mastery streak
+            $blackBook->wrong_count++;
+            $blackBook->correct_streak = 0; // Reset mastery progress
             $blackBook->is_mastered = false;
             $blackBook->save();
         }
 
-        $user->save();
-
-        // Advance to next question
         $quiz['current_index']++;
         session(['quiz' => $quiz]);
 
+        // Cek apakah kuis sudah mencapai soal terakhir
         if ($quiz['current_index'] >= count($quiz['questions'])) {
-            return redirect()->route('quiz.results');
+            return $this->finishQuiz($quiz);
         }
 
-        return redirect()->route('quiz.show')->with($isCorrect ? 'success' : 'error', $isCorrect ? 'Sugoi!' : 'Chigau! Correct answer: ' . $question->correct_answer);
+        return redirect()->route('quiz.show');
     }
 
-    public function usePaw()
+    /**
+     * Menyelesaikan sesi kuis, memberikan reward Koban, dan membuka level baru.
+     */
+    private function finishQuiz($quiz)
     {
         $user = Auth::user();
-        $quiz = session('quiz');
-
-        if ($user->paw_points > 0) {
-            $user->paw_points--;
-            $user->save();
-
-            // Trigger lifeline in view (handled by session/flash)
-            return back()->with('neko_punch', true);
-        }
-
-        return back()->with('error', 'No Paw Points left!');
-    }
-
-    public function results()
-    {
-        $quiz = session('quiz');
-        if (!$quiz) return redirect()->route('dashboard');
-
         $level = Level::find($quiz['level_id']);
-        $score = $quiz['score'];
-        $correct = $quiz['correct_count'];
-        $total = count($quiz['questions']);
+        $totalQuestions = count($quiz['questions']);
+        $score = ($quiz['correct_answers'] / $totalQuestions) * 100;
 
-        // Update progress if at least 60% correct
-        if (($correct / $total) >= 0.6) {
-            // Award Level Completion Bonus
-            $bonus = 100;
-            $user = Auth::user();
-            $user->koban += $bonus;
-            $user->save();
+        // Tandai level saat ini sebagai 'passed'
+        UserLevel::where('user_id', $user->id)
+            ->where('level_id', $level->id)
+            ->update(['status' => 'passed']);
 
-            Transaction::create([
-                'user_id' => $user->id,
-                'amount' => $bonus,
-                'type' => 'reward',
-                'description' => "Level completion bonus: {$level->name}"
-            ]);
-
-            UserProgress::updateOrCreate(
-                ['user_id' => Auth::id(), 'level_id' => $level->id],
-                ['status' => 'passed', 'high_score' => max($quiz['score'], 0)]
+        // Logika Buka Level Berikutnya (Progressive Unlock)
+        $nextLevel = Level::where('region_id', $level->region_id)
+            ->where('order', $level->order + 1)
+            ->first();
+        if ($nextLevel) {
+            UserLevel::firstOrCreate(
+                ['user_id' => $user->id, 'level_id' => $nextLevel->id],
+                ['status' => 'unlocked']
             );
-
-            // Unlock next level if exists
-            $nextLevel = Level::where('region_id', $level->region_id)
-                ->where('order', '>', $level->order)
-                ->orderBy('order')
-                ->first();
-
-            if ($nextLevel) {
-                UserProgress::firstOrCreate(
-                    ['user_id' => Auth::id(), 'level_id' => $nextLevel->id],
-                    ['status' => 'unlocked']
-                );
-            }
         }
 
-        // Clear session
-        session()->forget('quiz');
+        // Reward Koban (Koin Emas) berdasarkan jumlah jawaban benar
+        $reward = $quiz['correct_answers'] * 10;
+        $user->increment('koban', $reward);
 
-        return view('quiz.results', compact('level', 'score', 'correct', 'total'));
+        // Catat riwayat transaksi reward
+        Transaction::create([
+            'user_id' => $user->id,
+            'amount' => $reward,
+            'type' => 'reward',
+            'description' => 'Reward penyelesaian Level ' . $level->name
+        ]);
+
+        // Jika Boss Level dan skor mencukupi, simpan ke Buku Kenangan (Memory Album)
+        if ($level->is_boss_level && $score >= 80) {
+            MemoryAlbum::firstOrCreate([
+                'user_id' => $user->id,
+                'level_id' => $level->id,
+                'image_path' => $level->questions()->first()->visual_hint_path ?? 'default_boss.png',
+                'earned_at' => now()
+            ]);
+        }
+
+        // Hapus session kuis agar bersih
+        session()->forget('quiz');
+        return redirect()->route('dashboard')->with('success', "Level Selesai! Skor: $score%. Anda mendapat $reward Koban!");
     }
 }

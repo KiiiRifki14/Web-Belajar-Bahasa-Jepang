@@ -1,186 +1,156 @@
 <x-app-layout>
-    <div class="py-12 min-h-screen" x-data="{ 
-        tab: 'powerups', 
-        omikujiDrawing: false, 
-        result: {{ session('omikuji_result') ? json_encode(session('omikuji_result')) : 'null' }}
-    }">
+    {{--
+        Koban Ichiba (Toko Desa) - Nihongo Odyssey
+        Tempat membeli Power-ups, Kosmetik, dan menarik O-mikuji.
+        Desain: Rak Kayu Jepang Estetik.
+    --}}
+    <div class="py-12" x-data="{ showOmikuji: false }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <!-- Store Header & Balance -->
-            <div class="flex flex-col md:flex-row justify-between items-center mb-16 gap-10">
-                <div class="flex items-center group">
-                    <div class="text-7xl mr-8 filter drop-shadow-2xl transition-transform group-hover:rotate-12 duration-500">🏮</div>
-                    <div>
-                        <h1 class="text-6xl font-black text-[var(--theme-text)] tracking-tighter uppercase italic leading-none">Koban Ichiba</h1>
-                        <p class="text-[var(--theme-secondary)] font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Traditional treasures for the modern student</p>
-                    </div>
+            <!-- Header Toko: Menampilkan Saldo Koban -->
+            <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h1 class="text-5xl font-black text-[var(--theme-text)] tracking-tighter uppercase italic leading-none">Koban Ichiba</h1>
+                    <p class="text-xs text-gray-400 mt-4 uppercase tracking-[0.4em] font-bold">Pasar Tradisional Desa Odyssey</p>
                 </div>
-
-                <div class="relative group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] rounded-3xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                    <div class="bg-white dark:bg-gray-800 px-10 py-6 rounded-3xl flex items-center shadow-2xl relative z-10 manhua-outline">
-                        <span class="text-4xl mr-4 animate-bounce">🪙</span>
-                        <div>
-                            <span class="block text-[10px] font-black uppercase text-gray-400 tracking-widest leading-none mb-1">Your Coins</span>
-                            <span class="text-4xl font-black text-[var(--theme-text)] tabular-nums">{{ number_format($user->koban) }}</span>
-                        </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-xl manhua-outline flex flex-col items-center min-w-[180px]">
+                    <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Dompet Anda</span>
+                    <div class="text-3xl font-black text-amber-500 flex items-center">
+                        <span class="mr-2">🪙</span> {{ number_format($user->koban) }}
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
-
-                <!-- Left Column: O-mikuji & Redemption -->
-                <div class="space-y-12">
-
-                    <!-- O-mikuji Shrine -->
-                    <div class="bg-white dark:bg-gray-800 rounded-[3rem] p-10 text-center relative overflow-hidden shadow-2xl manhua-outline group">
-                        <!-- Background Pattern -->
-                        <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;"></div>
-
-                        <div class="relative z-10">
-                            <span class="px-4 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 inline-block">Fortune Shrine</span>
-                            <h2 class="text-2xl font-black text-[var(--theme-text)] mb-8">Draw a Fortune</h2>
-
-                            <!-- The Gacha Box Animation -->
-                            <div class="relative py-12 flex justify-center h-48 items-center">
-                                <div class="text-9xl transition-all duration-75 relative z-20" :class="omikujiDrawing ? 'animate-omikuji-shake' : 'hover:scale-110 cursor-pointer'">
-                                    🔲
-                                    <div class="absolute inset-0 flex items-center justify-center text-4xl mt-4">🎋</div>
-                                </div>
-                                <div x-show="omikujiDrawing" class="absolute inset-0 flex items-center justify-center">
-                                    <div class="w-32 h-32 bg-[var(--theme-primary)] rounded-full blur-3xl opacity-30 animate-pulse"></div>
-                                </div>
-                            </div>
-
-                            <form action="{{ route('store.omikuji') }}" method="POST" @submit="omikujiDrawing = true">
-                                @csrf
-                                <button type="submit" :disabled="omikujiDrawing"
-                                    class="w-full py-5 bg-[var(--theme-primary)] hover:bg-[var(--theme-secondary)] text-white font-black rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50 manhua-glow">
-                                    <span x-show="!omikujiDrawing">Seek Destiny (100 🪙)</span>
-                                    <span x-show="omikujiDrawing" class="flex items-center justify-center">
-                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Shaking Destiny...
-                                    </span>
-                                </button>
-                            </form>
-
-                            <!-- Result Overlay -->
-                            <div x-show="result" x-transition @click.away="result = null"
-                                class="mt-10 p-6 bg-[var(--theme-bg)] rounded-3xl border-2 border-dashed border-[var(--theme-primary)] animate-fadeIn relative">
-                                <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-white px-4 py-1 rounded-full shadow-md text-xs font-black uppercase tracking-widest text-[var(--theme-primary)]">Your Fate</div>
-                                <div class="text-4xl mb-4" x-text="result.type === 'blessing' ? '✨' : '📜'"></div>
-                                <h4 class="text-sm font-black text-[var(--theme-text)] italic leading-relaxed" x-text="result.message"></h4>
-                                <button @click="result = null" class="mt-6 text-[10px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 transition-opacity">Dismiss</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mystery Gift -->
-                    <div class="bg-[var(--theme-text)] p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--theme-primary)] opacity-10 blur-3xl"></div>
-                        <h3 class="text-xl font-black text-white mb-6 flex items-center">
-                            <span class="mr-4 text-2xl">🎁</span> Mystery Gift
-                        </h3>
-                        <form action="{{ route('store.redeem') }}" method="POST" class="space-y-4">
-                            @csrf
-                            <input type="text" name="code" placeholder="ENTER CODE"
-                                class="w-full bg-white/5 border-2 border-white/10 rounded-2xl p-5 text-[var(--theme-primary)] font-mono font-black tracking-[0.4em] focus:border-[var(--theme-primary)] focus:ring-0 text-center uppercase transition-all">
-                            <button type="submit" class="w-full py-4 bg-white text-[var(--theme-text)] font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-xl">
-                                Redeem
-                            </button>
-                        </form>
-                    </div>
-
-                </div>
-
-                <!-- Right Column: Wooden Shelves -->
-                <div class="lg:col-span-2">
-
-                    <!-- Tab Switcher -->
-                    <div class="flex items-center space-x-2 mb-10 p-2 bg-gray-100 dark:bg-gray-800 rounded-3xl w-fit">
-                        <button @click="tab = 'powerups'" :class="tab === 'powerups' ? 'bg-white dark:bg-gray-700 shadow-md text-[var(--theme-text)]' : 'text-gray-400'" class="px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-                            ⚡ Power-ups
+            <!-- Bagian Atas: O-mikuji & Voucher -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <!-- Portal O-mikuji -->
+                <div class="md:col-span-2 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950 p-10 rounded-[3rem] manhua-outline relative overflow-hidden group">
+                    <div class="absolute -right-10 -bottom-10 text-[12rem] opacity-5 group-hover:rotate-12 transition-transform">⛩️</div>
+                    <div class="relative z-10">
+                        <h3 class="text-3xl font-black text-red-800 dark:text-red-200 mb-2">O-mikuji Shrine</h3>
+                        <p class="text-sm text-red-600 dark:text-red-300 opacity-70 mb-8 max-w-sm">Tarik ramalan hari ini untuk mendapatkan nasihat atau keberuntungan ekstra.</p>
+                        <button @click="showOmikuji = true" class="px-8 py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-transform manhua-glow">
+                            Tarik Ramalan (100 🪙)
                         </button>
-                        <button @click="tab = 'skins'" :class="tab === 'skins' ? 'bg-white dark:bg-gray-700 shadow-md text-[var(--theme-text)]' : 'text-gray-400'" class="px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-                            👘 Cosmetics
-                        </button>
-                    </div>
-
-                    <!-- Shelf Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        @foreach($items as $item)
-                        <div x-show="tab === '{{ $item->type === 'powerup' ? 'powerups' : 'skins' }}'"
-                            x-transition
-                            class="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl manhua-outline transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl group flex flex-col">
-
-                            <div class="flex justify-between items-start mb-8">
-                                <span class="text-[10px] font-black uppercase underline decoration-[var(--theme-primary)] decoration-4 underline-offset-4 tracking-widest">{{ $item->type }}</span>
-                                <div class="w-16 h-16 bg-[var(--theme-bg)] rounded-3xl flex items-center justify-center text-3xl group-hover:rotate-12 transition-transform shadow-inner">
-                                    @if($item->name === 'Streak Shield') 🛡️ @elseif($item->name === 'Kopi Begadang') ☕ @elseif($item->name === 'Baju Kantoran') 💼 @elseif($item->name === 'Baju Samurai') ⚔️ @elseif($item->name === 'Kimono Sakura') 🌸 @else 📦 @endif
-                                </div>
-                            </div>
-
-                            <h4 class="text-2xl font-black text-[var(--theme-text)] mb-3 leading-tight">{{ $item->name }}</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-8 leading-relaxed flex-grow italic">"{{ $item->description }}"</p>
-
-                            <form action="{{ route('store.purchase', $item) }}" method="POST">
-                                @csrf
-                                <button type="submit"
-                                    class="w-full flex justify-between items-center bg-[var(--theme-bg)] border-2 border-[var(--theme-border)] hover:border-[var(--theme-primary)] p-5 rounded-2xl transition-all group-hover:shadow-lg">
-                                    <span class="font-black text-xs uppercase tracking-widest opacity-60">Purchase</span>
-                                    <span class="flex items-center text-[var(--theme-text)] font-black">
-                                        <span class="mr-2 opacity-50 text-xl">🪙</span> {{ number_format($item->price) }}
-                                    </span>
-                                </button>
-                            </form>
-                        </div>
-                        @endforeach
                     </div>
                 </div>
 
+                <!-- Penukaran Kode Voucher -->
+                <div class="bg-white dark:bg-gray-800 p-10 rounded-[3rem] manhua-outline">
+                    <h3 class="text-xl font-black text-[var(--theme-text)] mb-2 italic">Misi Rahasia?</h3>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-black mb-6 leading-relaxed">Masukkan kode untuk menukar kado misterius</p>
+                    <form action="{{ route('redeem') }}" method="POST" class="space-y-4">
+                        @csrf
+                        <input type="text" name="code" placeholder="KODE-ODYSSEY" class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-[var(--theme-border)] p-4 rounded-xl text-center font-black tracking-widest outline-none focus:border-[var(--theme-primary)] transition-all">
+                        <button type="submit" class="w-full py-4 bg-[var(--theme-primary)] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg">Klaim Kado</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Rak Item: Power-ups & Skin Mascot -->
+            <h2 class="text-2xl font-black text-[var(--theme-text)] mb-8 uppercase tracking-widest italic border-l-8 border-[var(--theme-primary)] pl-6">Rak Barang Dagangan</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+                @foreach($items as $item)
+                <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-xl overflow-hidden manhua-outline group flex flex-col">
+                    <div class="h-48 bg-stone-50 dark:bg-gray-900 flex items-center justify-center relative group-hover:bg-stone-100 transition-colors">
+                        <span class="text-7xl group-hover:scale-110 transition-transform duration-500">
+                            @if($item->type === 'powerup') ⚡ @elseif($item->type === 'skin') 👘 @else 🎁 @endif
+                        </span>
+                        <div class="absolute top-4 right-4 bg-white/80 dark:bg-gray-800/80 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-[var(--theme-primary)] manhua-outline decoration-none">
+                            {{ $item->type }}
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-xl font-black text-[var(--theme-text)] mb-1">{{ $item->name }}</h3>
+                        <p class="text-xs text-gray-400 mb-6 flex-grow leading-relaxed italic">"{{ $item->description }}"</p>
+
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="text-2xl font-black text-amber-500">
+                                <span class="text-sm mr-1">🪙</span> {{ number_format($item->price) }}
+                            </div>
+                            <form action="{{ route('purchase', $item) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="bg-[var(--theme-secondary)] text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-[var(--theme-primary)] transition-all active:scale-95">
+                                    Beli
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
         </div>
+
+        <!-- Pop-up O-mikuji (Eksklusif: Animasi Box Guncang) -->
+        <template x-if="showOmikuji">
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div class="bg-white dark:bg-gray-800 p-12 rounded-[3.5rem] max-w-lg w-full shadow-2xl relative manhua-outline text-center" @click.away="showOmikuji = false">
+
+                    @if(session('omikuji_result'))
+                    <!-- Hasil Ramalan -->
+                    <div class="animate-fadeIn">
+                        <span class="text-xs font-black uppercase tracking-[0.5em] text-red-400 mb-8 block">Hasil Ramalan Anda</span>
+                        <div class="text-6xl mb-8">📜</div>
+                        <h4 class="text-2xl font-serif italic text-[var(--theme-text)] leading-relaxed mb-10">
+                            "{{ session('omikuji_result')['message'] }}"
+                        </h4>
+                        <button @click="showOmikuji = false" class="px-8 py-3 bg-red-600 text-white rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg">Arigatou</button>
+                    </div>
+                    @else
+                    <!-- Box Guncang Sebelum Tarik -->
+                    <div x-data="{ shaking: false }">
+                        <h3 class="text-2xl font-black mb-10 italic">Guncang Kotak Ramalan</h3>
+                        <div class="text-8xl inline-block mb-10" :class="shaking ? 'animate-shake' : ''">🎍</div>
+                        <div class="flex flex-col gap-4">
+                            <form action="{{ route('omikuji.draw') }}" method="POST" @submit="shaking = true">
+                                @csrf
+                                <button type="submit" class="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl">
+                                    TARIK SEKARANG!
+                                </button>
+                            </form>
+                            <button @click="showOmikuji = false" class="text-xs font-black text-gray-400 uppercase tracking-widest">Batal</button>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </template>
     </div>
 
+    <!-- Animasi Box Guncang -->
     <style>
-        @keyframes omikuji-shake {
+        @keyframes shake {
+            0% {
+                transform: rotate(0deg);
+            }
 
-            0%,
+            20% {
+                transform: rotate(15deg);
+            }
+
+            40% {
+                transform: rotate(-15deg);
+            }
+
+            60% {
+                transform: rotate(15deg);
+            }
+
+            80% {
+                transform: rotate(-15deg);
+            }
+
             100% {
-                transform: rotate(0);
-            }
-
-            25% {
-                transform: rotate(10deg);
-            }
-
-            75% {
-                transform: rotate(-10deg);
+                transform: rotate(0deg);
             }
         }
 
-        .animate-omikuji-shake {
-            animation: omikuji-shake 0.1s infinite;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .animate-shake {
+            animation: shake 0.4s infinite;
         }
 
         .animate-fadeIn {
-            animation: fadeIn 0.4s ease-out forwards;
+            animation: fadeIn 0.5s ease-out forwards;
         }
     </style>
 </x-app-layout>

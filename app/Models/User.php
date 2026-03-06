@@ -13,9 +13,8 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Atribut yang dapat diisi (Mass Assignable).
+     * Termasuk field gamifikasi like koban, streak, dan mood.
      */
     protected $fillable = [
         'name',
@@ -29,7 +28,7 @@ class User extends Authenticatable
         'active_mascot_skin',
         'mood',
         'paw_points',
-        'last_daily_reward_at',
+        'last_daily_claim',
     ];
 
     /**

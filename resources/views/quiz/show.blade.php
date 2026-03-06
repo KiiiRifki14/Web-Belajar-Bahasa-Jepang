@@ -1,142 +1,132 @@
 <x-app-layout>
-    <div class="min-h-screen pt-4 pb-12 flex items-center justify-center">
-        <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+    {{--
+        Antarmuka Quiz Engine - Nihongo Odyssey
+        Layout: Split Screen (Visual Hint di kiri, Kuis Interaktif di kanan).
+        Mendukung Neko-Punch Lifeline dan Mood Difficulty.
+    --}}
+    <div class="min-h-screen flex flex-col md:flex-row overflow-hidden bg-white dark:bg-gray-900">
 
-            <!-- Desktop: Split Screen | Mobile: Stacked -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <!-- Sisi Kiri: Visual Hint & Story Context (50% di Desktop) -->
+        <div class="w-full md:w-1/2 h-[40vh] md:h-screen relative bg-stone-100 dark:bg-gray-800 flex items-center justify-center p-8 border-r-2 border-[var(--theme-border)]">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/papyros.png')]"></div>
 
-                <!-- Left Side: Visual Hint / Story -->
-                <div class="lg:sticky lg:top-24 space-y-4">
-                    <div class="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl manhua-outline relative group">
-                        @if($question->visual_hint_path)
-                        <img src="{{ asset('storage/' . $question->visual_hint_path) }}" alt="Visual Hint" class="w-full h-[400px] lg:h-[600px] object-cover transition-transform duration-700 group-hover:scale-105">
-                        @else
-                        <div class="w-full h-[300px] lg:h-[500px] bg-gradient-to-br from-[var(--theme-primary)] to-[var(--theme-secondary)] flex items-center justify-center opacity-20">
-                            <span class="text-9xl opacity-10">🏮</span>
-                        </div>
+            <div class="relative z-10 w-full max-w-lg">
+                <!-- Visual Hint Image: Gambar petunjuk soal -->
+                <div class="bg-white dark:bg-gray-700 p-2 rounded-2xl shadow-2xl manhua-outline group overflow-hidden">
+                    @if($question->visual_hint_path)
+                    <img src="{{ asset('storage/' . $question->visual_hint_path) }}" class="w-full aspect-video object-cover rounded-xl transition-transform group-hover:scale-110 duration-700" alt="Visual Hint">
+                    @else
+                    <!-- Tampilan default jika tidak ada gambar -->
+                    <div class="w-full aspect-video bg-gradient-to-br from-indigo-50 to-pink-50 dark:from-indigo-950 dark:from-gray-900 flex items-center justify-center text-6xl">
+                        ⛩️
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Neko-Sensei Reflection Box: Pesan motivasi -->
+                <div class="mt-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 rounded-[2rem] manhua-outline relative">
+                    <div class="absolute -top-6 -left-6 text-4xl transform -rotate-12">🐱</div>
+                    <p class="text-sm font-serif italic text-[var(--theme-text)] leading-relaxed">
+                        "Amati gambar di atas dengan seksama. Bahasa Jepang bukan hanya soal kata, tapi juga rasa dan nuansa."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sisi Kanan: Panel Kuis Interaktif -->
+        <div class="w-full md:w-1/2 h-[60vh] md:h-screen overflow-y-auto flex items-center justify-center p-6 md:p-12 relative">
+            <div class="w-full max-w-md">
+
+                <!-- Progress Bar: Indikator sejauh mana kuis berlangsung -->
+                <div class="mb-10 w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-[var(--theme-primary)] h-full transition-all duration-500" style="width: {{ ($currentIndex / count($quiz['questions'])) * 100 }}%"></div>
+                </div>
+
+                <!-- Judul Pertanyaan -->
+                <div class="mb-12">
+                    <span class="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-2 block">Level {{ $level->order }}: {{ $level->name }}</span>
+                    <h2 class="text-3xl font-black text-[var(--theme-text)] leading-tight tracking-tighter">
+                        {{ $question->question_text }}
+                    </h2>
+                </div>
+
+                <!-- Form Jawaban: Mendukung Pilihan Ganda & Isian -->
+                <form action="{{ route('quiz.answer') }}" method="POST" class="space-y-6">
+                    @csrf
+                    <input type="hidden" name="question_id" value="{{ $question->id }}">
+
+                    @if($question->type === 'multiple_choice')
+                    <div class="grid grid-cols-1 gap-4" x-data="{ selected: null, punch: {{ session('neko_punch') ? 'true' : 'false' }} }">
+                        @foreach($question->options as $key => $option)
+                        @php
+                        $isWrong = ($option !== $question->correct_answer);
+                        // Sembunyikan opsi salah hanya jika punch aktif DAN ini bukan opsi pertama (untuk keamanan UI)
+                        $shouldHide = $isWrong && $loop->index > 0;
+                        @endphp
+                        <label
+                            x-show="!punch || (punch && !{{ $shouldHide ? 'true' : 'false' }})"
+                            x-cloak
+                            class="relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all hover:translate-x-2 bg-transparent group"
+                            :class="selected === '{{ $option }}' ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 manhua-glow' : 'border-[var(--theme-border)]'">
+
+                            <input type="radio" name="answer" value="{{ $option }}" class="hidden" @change="selected = '{{ $option }}'" required>
+
+                            <span class="flex-grow font-bold text-[var(--theme-text)]">{{ $option }}</span>
+                            <span class="text-xs opacity-0 group-hover:opacity-30 transition-opacity">Pilih</span>
+                        </label>
+                        @endforeach
+                    </div>
+                    @else
+                    <!-- Tipe Fill-in (Isian Singkat) -->
+                    <div class="relative group">
+                        <input type="text" name="answer" placeholder="Tulis jawaban di sini..."
+                            class="w-full bg-transparent border-b-4 border-[var(--theme-border)] focus:border-[var(--theme-primary)] text-2xl font-black py-4 outline-none transition-colors"
+                            required autocomplete="off">
+                        <div class="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gunakan huruf Romaji sesuai instruksi</div>
+                    </div>
+                    @endif
+
+                    <!-- Tombol Aksi: Neko-Punch & Kirim -->
+                    <div class="pt-10 flex items-center justify-between gap-6">
+                        <!-- Neko-Punch Lifeline PROTECTION: Cek paw_points dan session -->
+                        @if($question->type === 'multiple_choice')
+                        <button type="submit" formaction="{{ route('quiz.use_paw') }}"
+                            class="w-16 h-16 rounded-2xl flex items-center justify-center transition-all bg-indigo-50 dark:bg-indigo-900 border-2 border-indigo-200 dark:border-indigo-700 group hover:scale-110 {{ ($user->paw_points <= 0 || session('neko_punch')) ? 'opacity-20 pointer-events-none' : '' }}"
+                            title="Neko-Punch: Eliminasi opsi salah">
+                            <span class="text-3xl filter group-hover:drop-shadow-[0_0_8px_rgba(99,102,241,0.6)]">🐾</span>
+                            <div class="absolute -top-2 -right-2 bg-indigo-600 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                                {{ $user->paw_points }}
+                            </div>
+                        </button>
                         @endif
 
-                        <!-- Overlay Story/Context -->
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8">
-                            <h3 class="text-white text-xl font-black tracking-tight mb-2">Desa {{ $level->region->name }}</h3>
-                            <p class="text-white/70 text-sm italic">"Focus your spirit. The answers are hidden in the lines."</p>
-                        </div>
+                        <button type="submit" class="flex-grow bg-[var(--theme-text)] text-white py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-xl hover:-translate-y-1 transition-all manhua-glow-hover active:scale-95">
+                            Kirim Jawaban
+                        </button>
                     </div>
+                </form>
+            </div>
 
-                    <!-- Progress Bar -->
-                    <div class="px-2">
-                        <div class="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1 opacity-50">
-                            <span>Level Progress</span>
-                            <span>{{ $currentIndex + 1 }} / {{ count($quiz['questions']) }}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-[var(--theme-primary)] h-full transition-all duration-500 manhua-glow" style="width: {{ (($currentIndex + 1) / count($quiz['questions'])) * 100 }}%"></div>
-                        </div>
-                    </div>
+            <!-- Stats Mengambang: Streak & Koban -->
+            <div class="absolute top-6 right-6 flex items-center gap-4 bg-white/50 dark:bg-gray-800/50 p-3 rounded-full backdrop-blur-sm border border-white/20">
+                <div class="flex items-center text-xs font-black">
+                    <span class="text-orange-500 mr-2">🔥</span> {{ $user->current_streak }}
                 </div>
-
-                <!-- Right Side: Quiz Interactive Panel -->
-                <div class="space-y-6">
-                    <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 lg:p-12 shadow-2xl manhua-outline relative overflow-hidden">
-                        <!-- Soft Glow Elements -->
-                        <div class="absolute -top-24 -right-24 w-64 h-64 bg-[var(--theme-primary)] opacity-5 blur-[100px] rounded-full"></div>
-
-                        <div class="relative z-10" x-data="{ answer: '', lifelineUsed: {{ session('neko_punch') ? 'true' : 'false' }}, options: {{ json_encode($question->options ?? []) }}, hidden: [] }"
-                            x-init="if(lifelineUsed) { let keys = Object.keys(options).filter(k => options[k] !== '{{ $question->correct_answer }}'); hidden = keys.sort(() => 0.5 - Math.random()).slice(0, 2); }">
-
-                            <!-- Question Header -->
-                            <div class="flex justify-between items-center mb-10">
-                                <span class="px-4 py-1.5 bg-[var(--theme-bg)] border border-[var(--theme-border)] text-[var(--theme-text)] rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
-                                    {{ $question->type === 'multiple_choice' ? 'Multiple Choice' : 'Direct Answer' }}
-                                </span>
-                                <div class="flex items-center space-x-2 text-amber-500 font-black">
-                                    <span>🔥</span>
-                                    <span class="text-xl">{{ Auth::user()->current_streak }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Question Text -->
-                            <h2 class="text-3xl lg:text-4xl font-black text-[var(--theme-text)] leading-tight mb-12">
-                                {{ $question->question_text }}
-                            </h2>
-
-                            <!-- Quiz Form -->
-                            <form action="{{ route('quiz.answer') }}" method="POST" id="quiz-form">
-                                @csrf
-                                <input type="hidden" name="question_id" value="{{ $question->id }}">
-                                <input type="hidden" name="answer" :value="answer">
-
-                                @if($question->type === 'multiple_choice')
-                                <div class="grid grid-cols-1 gap-4">
-                                    @foreach($question->options as $key => $option)
-                                    @if($option)
-                                    <button type="button"
-                                        x-show="!hidden.includes('{{ $key }}')"
-                                        @click="answer = '{{ $option }}'; $nextTick(() => $el.form.submit())"
-                                        class="group relative w-full text-left p-6 rounded-2xl border-2 transition-all duration-300 hover:-translate-y-1 active:scale-95 flex items-center border-[var(--theme-border)] hover:border-[var(--theme-secondary)] hover:bg-[var(--theme-bg)]">
-                                        <span class="w-10 h-10 rounded-xl bg-[var(--theme-bg)] border border-[var(--theme-border)] flex items-center justify-center font-black mr-4 group-hover:bg-[var(--theme-primary)] group-hover:text-white transition-colors">
-                                            {{ strtoupper($key) }}
-                                        </span>
-                                        <span class="text-lg font-bold">{{ $option }}</span>
-                                        <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">✨</div>
-                                    </button>
-                                    @endif
-                                    @endforeach
-
-                                    <!-- Neko-Punch Lifeline -->
-                                    @if(Auth::user()->paw_points > 0)
-                                    <div class="mt-8 pt-8 border-t border-[var(--theme-border)] flex flex-col items-center">
-                                        <form action="{{ route('quiz.paw') }}" method="POST">
-                                            @csrf
-                                            <button type="submit"
-                                                class="group bg-gradient-to-br from-amber-400 to-orange-500 p-1 rounded-full shadow-lg transition-all hover:scale-110 active:rotate-12 manhua-glow"
-                                                x-show="hidden.length === 0">
-                                                <div class="bg-white dark:bg-gray-900 rounded-full w-16 h-16 flex items-center justify-center text-3xl">🐾</div>
-                                            </button>
-                                        </form>
-                                        <span class="text-[10px] font-black uppercase tracking-widest mt-2 text-amber-600">Neko-Punch ({{ Auth::user()->paw_points }})</span>
-                                    </div>
-                                    @endif
-                                </div>
-                                @else
-                                <div class="relative group">
-                                    <input type="text" name="quiz_answer" placeholder="Type your answer..." autocomplete="off" autofocus
-                                        @keyup.enter="answer = $event.target.value; $el.form.submit()"
-                                        class="w-full bg-[var(--theme-bg)] border-2 border-[var(--theme-border)] rounded-2xl p-6 text-2xl font-black focus:border-[var(--theme-primary)] focus:ring-0 transition-all placeholder:opacity-20 text-[var(--theme-text)]">
-                                    <button type="button" @click="answer = $el.previousElementSibling.value; $el.form.submit()"
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 bg-[var(--theme-primary)] text-white p-4 rounded-xl shadow-lg transition-transform hover:scale-110 active:scale-95">
-                                        ⚔️
-                                    </button>
-                                </div>
-                                @endif
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Aesthetic footer tip -->
-                    <div class="text-center opacity-30 italic text-sm">
-                        "Setiap goresan kuas membawa kejernihan pikiran."
-                    </div>
+                <div class="flex items-center text-xs font-black border-l border-gray-300 dark:border-gray-600 pl-4">
+                    <span class="text-amber-500 mr-2">🪙</span> {{ number_format($user->koban) }}
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- Status Alerts -->
-    @if(session('success'))
-    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-bounce">
-        <div class="bg-green-500 text-white px-8 py-4 rounded-full shadow-2xl font-black tracking-widest flex items-center">
-            <span class="mr-3">🎉</span> {{ session('success') }}
-        </div>
-    </div>
-    @endif
-    @if(session('error'))
-    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <div class="bg-red-500 text-white px-8 py-4 rounded-full shadow-2xl font-black tracking-widest flex items-center">
-            <span class="mr-3">🙅</span> {{ session('error') }}
-        </div>
-    </div>
-    @endif
+    <!-- Gaya Kustom Manhua -->
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
 
+        .manhua-glow-hover:hover {
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.4);
+        }
+    </style>
 </x-app-layout>

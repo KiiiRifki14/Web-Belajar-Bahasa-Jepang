@@ -4,157 +4,106 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Item;
-use App\Models\UserInventory;
 use App\Models\Transaction;
+use App\Models\UserInventory;
 use App\Models\Voucher;
-use App\Models\SecretNote;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class StoreController extends Controller
 {
+    /**
+     * Menampilkan Koban Ichiba (Toko).
+     * Berisi daftar item (Rak Kayu Estetik) dan saldo Koban user.
+     */
     public function index()
     {
-        $user = Auth::user();
         $items = Item::all();
-        $inventory = $user->inventories()->with('item')->get();
-
-        return view('store.index', compact('items', 'user', 'inventory'));
+        $user = Auth::user();
+        return view('store.index', compact('items', 'user'));
     }
 
+    /**
+     * Membeli item dari toko.
+     * Mengurangi Koban dan menambahkan ke inventori user.
+     */
     public function purchase(Item $item)
     {
         $user = Auth::user();
 
         if ($user->koban < $item->price) {
-            return back()->with('error', 'Not enough Koban! Win more quizzes to earn coins.');
+            return back()->with('error', 'Koban Anda tidak cukup! Kumpulkan lebih banyak dari kuis.');
         }
 
-        DB::transaction(function () use ($user, $item) {
-            // Deduct Koban
-            $user->koban -= $item->price;
-            $user->save();
+        // Transaksi pengurangan Koban
+        $user->decrement('koban', $item->price);
 
-            // Record Transaction
-            Transaction::create([
-                'user_id' => $user->id,
-                'amount' => -$item->price,
-                'type' => 'purchase',
-                'description' => "Purchased item: {$item->name}"
-            ]);
+        // Tambahkan item ke Inventori User
+        $inventory = UserInventory::firstOrNew([
+            'user_id' => $user->id,
+            'item_id' => $item->id
+        ]);
+        $inventory->quantity++;
+        $inventory->save();
 
-            // Add to Inventory
-            $inventory = UserInventory::firstOrNew([
-                'user_id' => $user->id,
-                'item_id' => $item->id
-            ]);
-            $inventory->quantity += 1;
-            $inventory->save();
-        });
-
-        return back()->with('success', "Success! You bought {$item->name}. View it in your inventory.");
-    }
-
-    public function omikuji()
-    {
-        $user = Auth::user();
-        $cost = 100;
-
-        if ($user->koban < $cost) {
-            return back()->with('error', 'O-mikuji requires 100 Koban for a blessing.');
-        }
-
-        return DB::transaction(function () use ($user, $cost) {
-            $user->koban -= $cost;
-            $user->save();
-
-            Transaction::create([
-                'user_id' => $user->id,
-                'amount' => -$cost,
-                'type' => 'purchase',
-                'description' => 'Drew an O-mikuji fortune'
-            ]);
-
-            // Random Reward
-            $roll = rand(1, 100);
-            $reward = null;
-            $message = '';
-
-            if ($roll <= 10) {
-                // Jackpot: High Koban Reward
-                $amount = rand(200, 500);
-                $user->koban += $amount;
-                $user->save();
-                $message = "Dai-kichi (Great Blessing)! You found a hidden stash of {$amount} Koban!";
-            } elseif ($roll <= 30) {
-                // Item Reward: Random Powerup
-                $item = Item::where('type', 'powerup')->inRandomOrder()->first();
-                if ($item) {
-                    $inventory = UserInventory::firstOrNew(['user_id' => $user->id, 'item_id' => $item->id]);
-                    $inventory->quantity += 1;
-                    $inventory->save();
-                    $message = "Kichi (Good Blessing)! Neko-Sensei gifted you a {$item->name}!";
-                }
-            } else {
-                // Just a Secret Note (Fortune)
-                $note = SecretNote::inRandomOrder()->first();
-                $message = $note ? $note->content : "Continue your studies with diligence.";
-            }
-
-            return back()->with('omikuji_result', [
-                'message' => $message,
-                'type' => $roll <= 30 ? 'blessing' : 'fortune'
-            ]);
-        });
-    }
-
-    public function redeemVoucher(Request $request)
-    {
-        $validated = $request->validate([
-            'code' => 'required|string'
+        // Catat riwayat transaksi di database
+        Transaction::create([
+            'user_id' => $user->id,
+            'amount' => -$item->price,
+            'type' => 'purchase',
+            'description' => 'Membeli ' . $item->name
         ]);
 
-        $voucher = Voucher::where('code', $validated['code'])
-            ->where('is_redeemed', false)
-            ->where(function ($query) {
-                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            })
-            ->first();
+        return back()->with('success', $item->name . ' berhasil dibeli! Cek profil Anda.');
+    }
+
+    /**
+     * Menukarkan kode Voucher (Mystery Gift).
+     * Voucher bersifat sekali pakai (is_used = true).
+     */
+    public function redeem(Request $request)
+    {
+        $request->validate(['code' => 'required|string']);
+
+        $voucher = Voucher::where('code', $request->code)->where('is_used', false)->first();
 
         if (!$voucher) {
-            return back()->with('error', 'Invalid or expired voucher code.');
+            return back()->with('error', 'Kode voucher tidak valid atau sudah digunakan.');
         }
 
-        DB::transaction(function () use ($voucher) {
-            $user = Auth::user();
+        $user = Auth::user();
+        $user->increment('koban', $voucher->koban_reward);
+        $voucher->update(['is_used' => true]);
 
-            if ($voucher->reward_type === 'koban') {
-                $user->koban += $voucher->reward_amount;
-                $user->save();
+        return back()->with('success', 'Voucher berhasil ditukar! Anda mendapat ' . $voucher->koban_reward . ' Koban.');
+    }
 
-                Transaction::create([
-                    'user_id' => $user->id,
-                    'amount' => $voucher->reward_amount,
-                    'type' => 'reward',
-                    'description' => "Redeemed voucher: {$voucher->code}"
-                ]);
-            } elseif ($voucher->reward_type === 'item') {
-                $inventory = UserInventory::firstOrNew([
-                    'user_id' => $user->id,
-                    'item_id' => $voucher->item_id
-                ]);
-                $inventory->quantity += $voucher->quantity;
-                $inventory->save();
-            }
+    /**
+     * Sistem O-mikuji (Gacha Ramalan).
+     * Berbiaya 100 Koban untuk mendapatkan pesan keberuntungan acak.
+     */
+    public function drawOmikuji()
+    {
+        $user = Auth::user();
 
-            $voucher->is_redeemed = true;
-            $voucher->redeemed_at = now();
-            $voucher->user_id = $user->id; // Assuming we add user_id to vouchers to track who redeemed
-            $voucher->save();
-        });
+        // Cek saldo sebelum penarikan
+        if ($user->koban < 100) {
+            return back()->with('error', 'Koban tidak cukup untuk O-mikuji (Butuh 100 🪙).');
+        }
 
-        return back()->with('success', 'Voucher redeemed successfully!');
+        $user->decrement('koban', 100);
+
+        // Kumpulan ramalan acak (Poetic)
+        $fortunes = [
+            ['type' => 'blessing', 'message' => 'Daikichi (大吉) - Keberuntungan Luar Biasa! Semangat belajarmu akan membuahkan hasil manis.'],
+            ['type' => 'blessing', 'message' => 'Chukichi (中吉) - Keberuntungan Sedang. Hari yang baik untuk menghafal Kanji baru.'],
+            ['type' => 'blessing', 'message' => 'Shokichi (小吉) - Keberuntungan Kecil. Langkah kecil hari ini adalah sukses besar esok.'],
+            ['type' => 'future', 'message' => 'Suekichi (末吉) - Keberuntungan di Akhir. Sabarlah, hasil belajarmu akan terlihat nanti.'],
+            ['type' => 'future', 'message' => 'Kyo (凶) - Kurang Beruntung. Jangan menyerah! Kegagalan adalah awal dari penguasaan.'],
+        ];
+
+        $result = $fortunes[array_rand($fortunes)];
+
+        return back()->with('omikuji_result', $result)->with('success', 'O-mikuji telah ditarik!');
     }
 }

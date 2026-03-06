@@ -1,11 +1,15 @@
 <x-app-layout>
+    {{--
+        Halaman Dashboard Utama - Nihongo Odyssey
+        Menampilkan progress peta, mood tracker, tema dinamis, dan akses fitur utama.
+    --}}
     <div class="py-6" x-data="{ mood: '{{ $user->mood ?? 'neutral' }}' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
-            <!-- Top Grid: Atmosphere Panels -->
+            <!-- Grid Atas: Panel Atmosfer (Countdown, Tema, Mood, Tip) -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 
-                <!-- Countdown Widget -->
+                <!-- Widget Hitung Mundur JLPT -->
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-lg border-b-4 border-pink-300 dark:border-pink-900 flex flex-col items-center justify-center text-center transition-all hover:scale-105 manhua-outline group">
                     <div class="text-pink-500 text-4xl mb-2 transition-transform group-hover:rotate-12">🏯</div>
                     <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Road to Tokyo</h3>
