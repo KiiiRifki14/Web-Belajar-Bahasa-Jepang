@@ -19,6 +19,7 @@ class StoreController extends Controller
     public function index()
     {
         $items = Item::all();
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         return view('store.index', compact('items', 'user'));
     }
@@ -29,6 +30,7 @@ class StoreController extends Controller
      */
     public function purchase(Item $item)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if ($user->koban < $item->price) {
@@ -71,6 +73,7 @@ class StoreController extends Controller
             return back()->with('error', 'Kode voucher tidak valid atau sudah digunakan.');
         }
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->increment('koban', $voucher->koban_reward);
         $voucher->update(['is_used' => true]);
@@ -84,6 +87,7 @@ class StoreController extends Controller
      */
     public function drawOmikuji()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // Cek saldo sebelum penarikan

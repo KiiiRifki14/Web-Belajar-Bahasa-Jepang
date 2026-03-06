@@ -13,6 +13,7 @@ class ThemeController extends Controller
             'theme' => 'required|string|in:senja,perpustakaan,neon'
         ]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->active_theme = $request->theme;
         $user->save();

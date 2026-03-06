@@ -68,4 +68,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(BlackBook::class);
     }
+
+    public function progress()
+    {
+        return $this->hasMany(UserProgress::class);
+    }
 }

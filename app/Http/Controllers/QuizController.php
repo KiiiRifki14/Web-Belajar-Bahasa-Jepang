@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Question;
 use App\Models\Level;
 use App\Models\User;
-use App\Models\UserLevel;
+use App\Models\UserProgress;
 use App\Models\BlackBook;
 use App\Models\Transaction;
 use App\Models\MemoryAlbum;
@@ -22,10 +22,11 @@ class QuizController extends Controller
      */
     public function start(Level $level)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // Pastikan level terdaftar di progress user
-        $progress = UserLevel::firstOrCreate(
+        $progress = UserProgress::firstOrCreate(
             ['user_id' => $user->id, 'level_id' => $level->id],
             ['status' => 'unlocked']
         );
@@ -73,6 +74,7 @@ class QuizController extends Controller
         $questionId = $quiz['questions'][$currentIndex];
         $question = Question::find($questionId);
         $level = Level::with('region')->find($quiz['level_id']);
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         return view('quiz.show', compact('question', 'level', 'currentIndex', 'quiz', 'user'));
@@ -84,6 +86,7 @@ class QuizController extends Controller
      */
     public function usePaw()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         if ($user->paw_points > 0) {
             $user->decrement('paw_points');
@@ -105,6 +108,7 @@ class QuizController extends Controller
         if (!$quiz) return redirect()->route('dashboard');
 
         $question = Question::find($request->question_id);
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // Hapus session Neko-Punch setelah digunakan/dijawab agar tidak terbawa ke soal selanjutnya
@@ -151,13 +155,14 @@ class QuizController extends Controller
      */
     private function finishQuiz($quiz)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $level = Level::find($quiz['level_id']);
         $totalQuestions = count($quiz['questions']);
         $score = ($quiz['correct_answers'] / $totalQuestions) * 100;
 
         // Tandai level saat ini sebagai 'passed'
-        UserLevel::where('user_id', $user->id)
+        UserProgress::where('user_id', $user->id)
             ->where('level_id', $level->id)
             ->update(['status' => 'passed']);
 
@@ -166,7 +171,7 @@ class QuizController extends Controller
             ->where('order', $level->order + 1)
             ->first();
         if ($nextLevel) {
-            UserLevel::firstOrCreate(
+            UserProgress::firstOrCreate(
                 ['user_id' => $user->id, 'level_id' => $nextLevel->id],
                 ['status' => 'unlocked']
             );

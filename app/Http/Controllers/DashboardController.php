@@ -15,6 +15,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // Fetch all regions with their levels to build the map
@@ -23,7 +24,7 @@ class DashboardController extends Controller
         $regions = Region::with('levels')->orderBy('order')->get();
 
         // Ambil progress user
-        $progress = UserLevel::where('user_id', $user->id)
+        $progress = UserProgress::where('user_id', $user->id)
             ->pluck('status', 'level_id');
 
         // Hitung mundur ke JLPT (contoh: 7 Desember 2026)
@@ -44,6 +45,7 @@ class DashboardController extends Controller
      */
     public function claimDaily()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (!$user->last_daily_claim || !Carbon::parse($user->last_daily_claim)->isToday()) {
@@ -61,6 +63,7 @@ class DashboardController extends Controller
             'mood' => 'required|string|in:happy,neutral,sad,angry'
         ]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->mood = $request->mood;
         $user->save();
